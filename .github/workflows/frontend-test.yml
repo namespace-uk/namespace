@@ -1,0 +1,30 @@
+name: Node.js CI
+
+on:
+  pull_request
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Cache npm dependencies
+      uses: actions/cache@v2
+      with:
+        path: '~/.npm'
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - run: (cd tests && pip install -r requirements.txt)
+    - run: npm install && npm run-script build

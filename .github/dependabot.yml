@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/main"
+    schedule:
+      interval: "daily"
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/chat"
+    schedule:
+      interval: "daily"
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/api_response"
+    schedule:
+      interval: "daily"
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/models"
+    schedule:
+      interval: "daily"

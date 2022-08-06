@@ -1,0 +1,16 @@
+html {
+    --fg-dark: #1A1A1B;
+    --fg-light: white;
+
+    --bg-dark: black;
+    --bg-light: #f6f8fa;    
+
+    --border-dark: #444;
+    --border-light: #dcdcdc;
+
+    --color-dark: whitesmoke;
+    --color-light: #333;
+
+    --radius-lrg: .7rem;
+    --radius-md: .35rem;
+}
