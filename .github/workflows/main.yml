@@ -25,16 +25,24 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-node-
 
+    - run: | 
+        touch .env &&
+        echo "REACT_APP_API_ROOT=${{ secrets.REACT_APP_API_ROOT }}" >> .env &&
+        echo "REACT_APP_USER_POOL_ID=${{ secrets.REACT_APP_USER_POOL_ID }}" >> .env &&
+        echo "REACT_APP_CLIENT_ID=${{ secrets.REACT_APP_CLIENT_ID }}" >> .env &&
+        echo "REACT_APP_TYPESENSE_SEARCH_HOST=${{ secrets.REACT_APP_TYPESENSE_SEARCH_HOST }}" >> .env &&
+        echo "REACT_APP_TYPESENSE_API_KEY=${{ secrets.REACT_APP_TYPESENSE_API_KEY }}" >> .env
     - run: npm install && npm run-script build
 
     - name: Netlify Actions
-      if: github.ref == 'refs/head/main'
+      if: ${{ github.ref == 'refs/heads/main' }}
       # You may pin to the exact commit or the version.
       # uses: nwtgck/actions-netlify@db90f8c196ec8808d9765741da1be62c48db8867
-      uses: nwtgck/actions-netlify@v1.1.11
+      uses: nwtgck/actions-netlify@v1.2
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       with:
+        production-branch: main
         publish-dir: ./build
         deploy-message: "Auto-deployed from GitHub"
