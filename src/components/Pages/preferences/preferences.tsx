@@ -1,7 +1,6 @@
 import React from "react";
 
 import { cx } from "@emotion/css";
-import Styles from "./preferences_styles";
 import CStyles from "../../common/common_styles";
 import { Tool } from "react-feather";
 import Template from "../../common/template";

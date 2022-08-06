@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { cx, css } from "@emotion/css";
-import { CheckCircle, MoreHorizontal } from "react-feather";
+import { CheckCircle } from "react-feather";
 import CommonType from "../../common/types";
 import { PulseLoader } from "react-spinners";
 
@@ -75,25 +74,25 @@ export enum ToggleState {
     LOADING
 }
 
-const GuideToggle: React.FC<{ 
-    guide: Guide, 
-    list: CommonType.List, 
-    dark: boolean, 
-    toggle: (g: CommonType.Guide, ts: ToggleState) => Promise<void>, 
-    state: ToggleState 
+const GuideToggle: React.FC<{
+    guide: Guide,
+    list: CommonType.List,
+    dark: boolean,
+    toggle: (g: CommonType.Guide, ts: ToggleState) => Promise<void>,
+    state: ToggleState
 }> = props => {
     return (
         <div
-            className={cx( 
-                Styles.timeline_card_s, 
+            className={cx(
+                Styles.timeline_card_s,
                 (props.dark && Styles.timeline_card_s_dark),
                 (props.state === ToggleState.ON && Styles.active_card),
                 (props.state === ToggleState.LOADING && Styles.loading_card)
             )}
             style={{ transition: "all .2s" }}
-            onClick={async () => { 
+            onClick={async () => {
                 const list = props.list;
-                
+
                 const index = list.guides.indexOf(props.guide.id);
                 if (index !== -1) list.guides.splice(index, 1);
                 else list.guides.push(props.guide.id);
@@ -106,26 +105,26 @@ const GuideToggle: React.FC<{
                     method: "POST",
                     body: JSON.stringify(props.list)
                 })
-                .then(res => res.json())
-                .then(_ => props.toggle(props.guide, newState));
+                    .then(res => res.json())
+                    .then(_ => props.toggle(props.guide, newState));
             }}
         >
             {
                 props.state === ToggleState.ON && (
-                    <CheckCircle 
+                    <CheckCircle
                         color="var(--success)"
-                        className={cx(Styles.icon_s)} 
+                        className={cx(Styles.icon_s)}
                     />
                 )
             }
             {
                 props.state === ToggleState.LOADING && (
                     <span className={cx(Styles.icon_s)}>
-                        <PulseLoader color="var(--primary)" size={8} margin={5}/>
+                        <PulseLoader color="var(--primary)" size={8} margin={5} />
                     </span>
                 )
             }
-            <h4 style={{ fontWeight: "bold" }}>{props.guide.header}</h4> 
+            <h4 style={{ fontWeight: "bold" }}>{props.guide.header}</h4>
             <h6 style={{ color: "gray" }}>{(new Date(props.guide.timestamp)).toDateString()}</h6>
         </div>
     )
