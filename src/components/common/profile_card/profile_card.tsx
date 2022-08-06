@@ -72,7 +72,7 @@ export default class ProfileCard extends React.Component<Props, State> {
             }
         }*/
 
-        if(!this.props.user) return;
+        if (!this.props.user) return;
         inAuthContext(this.fetchProfile, this.props.user);
     }
 
@@ -87,16 +87,16 @@ export default class ProfileCard extends React.Component<Props, State> {
                 'Authorization': session!.getAccessToken().getJwtToken(),
             }
         })
-        .then(res => res.json()) 
-        .then(data => {
-            data = data.body.user;
-            this.setState({ profile: data, editDesc: data.description, hasLoaded: true });
-            this.props.localStorage.setItem("profile", JSON.stringify(data));
-        });
+            .then(res => res.json())
+            .then(data => {
+                data = data.body.user;
+                this.setState({ profile: data, editDesc: data.description, hasLoaded: true });
+                this.props.localStorage.setItem("profile", JSON.stringify(data));
+            });
     }
 
     updateUserProfile = async () => {
-        if(this.props.user == null) return;
+        if (this.props.user == null) return;
         this.setState({ hasLoaded: false });
 
         const body = {
@@ -111,13 +111,13 @@ export default class ProfileCard extends React.Component<Props, State> {
             method: "POST",
             body: JSON.stringify(body)
         })
-        .then(res => res.json())
-        .then(data => {
-            this.setState({ profile: data.user, hasLoaded: true });
-            $("#location-field").val(data.user.location);
-            $("#description-field").val(data.user.description);
-            this.props.localStorage.setItem("profile", JSON.stringify(data.user));
-        });
+            .then(res => res.json())
+            .then(data => {
+                this.setState({ profile: data.user, hasLoaded: true });
+                $("#location-field").val(data.user.location);
+                $("#description-field").val(data.user.description);
+                this.props.localStorage.setItem("profile", JSON.stringify(data.user));
+            });
     }
 
     componentDidUpdate() {
@@ -130,43 +130,43 @@ export default class ProfileCard extends React.Component<Props, State> {
     componentDidMount = this.componentDidUpdate
 
     componentWillUnmount() {
-        window.onbeforeunload = null; 
+        window.onbeforeunload = null;
     }
 
     truncate(text: string, maxLength: number) {
         var ret = text;
         if (ret.length > maxLength) {
-            ret = ret.slice(0, maxLength-3) + "...";
+            ret = ret.slice(0, maxLength - 3) + "...";
         }
         return ret;
     }
-    
+
     render() {
-        if (!this.props.hasLoaded 
+        if (!this.props.hasLoaded
             || (this.props.user != null && !this.state.hasLoaded)
-            ) return (
-            <div 
-                style={{ 
-                    background: (this.props.dark ? "#1A1A1B" : "white"), 
-                    border: (this.props.dark ? "4px solid #444" : "4px solid #dcdcdc"), 
-                    width: "100%", borderRadius: ".35rem"  
+        ) return (
+            <div
+                style={{
+                    background: (this.props.dark ? "#1A1A1B" : "white"),
+                    border: (this.props.dark ? "4px solid #444" : "4px solid #dcdcdc"),
+                    width: "100%", borderRadius: ".35rem"
                 }}
             >
-                <br/>
+                <br />
                 <div style={{ height: 50, width: 50, marginTop: 50, marginBottom: 30, display: "table", marginLeft: "auto", marginRight: "auto" }}>
-                    <BounceLoader loading={true} color={ this.props.dark ? "white" : "#666" } size={50}/>
+                    <BounceLoader loading={true} color={this.props.dark ? "white" : "#666"} size={50} />
                 </div>
-                <br/>
+                <br />
             </div>
         )
 
         if (this.props.user !== null && this.state.profile !== null) return (
             <>
-                <div 
-                    style={{ 
-                        background: (this.props.dark ? "#1A1A1B" : "white"), 
-                        border: (this.props.dark ? "4px solid #444" : "4px solid #dcdcdc"), 
-                        width: "100%", borderRadius: ".35rem"  
+                <div
+                    style={{
+                        background: (this.props.dark ? "#1A1A1B" : "white"),
+                        border: (this.props.dark ? "4px solid #444" : "4px solid #dcdcdc"),
+                        width: "100%", borderRadius: ".35rem"
                     }}
                     className={cx(css`
                         & > div > #profile-edit-btn {
@@ -229,8 +229,8 @@ export default class ProfileCard extends React.Component<Props, State> {
                                 >Save</Button>
                             )
                         }
-                        <br/>
-                        <br/>
+                        <br />
+                        <br />
                         <div style={{ display: "inline-block", position: "relative", left: "calc(50% - 55px)", top: "calc(50% - 50px)", borderRadius: "50%", background: "whitesmoke", padding: 5 }}>
                             <Avatar
                                 size={100}
@@ -242,10 +242,10 @@ export default class ProfileCard extends React.Component<Props, State> {
                     </div>
                     <div hidden={this.state.isEditing} style={{ marginBottom: 10 }}>
                         <h5 className="text-center"
-                            style={{ fontFamily: "Jost", fontWeight: "bold", marginTop: 15, color: "#444", marginBottom: 5 }}    
+                            style={{ fontFamily: "Jost", fontWeight: "bold", marginTop: 15, color: "#444", marginBottom: 5 }}
                         >
-                            <Link 
-                                to={`/user/${this.props.user.getUsername()}`} 
+                            <Link
+                                to={`/user/${this.props.user.getUsername()}`}
                                 className={cx(css`
                                     ${this.props.dark && "color: whitesmoke !important;"}
                                     &:hover {
@@ -259,19 +259,19 @@ export default class ProfileCard extends React.Component<Props, State> {
                             </Link>
                         </h5>
                         <p style={{ textAlign: "center", fontFamily: "Jost", color: "#666", fontSize: ".9rem", paddingLeft: 30, paddingRight: 30, marginTop: 2 }}>
-                            <MapPin size={17} style={{ position: "relative", bottom: 1 }}/>
+                            <MapPin size={17} style={{ position: "relative", bottom: 1 }} />
                             &nbsp;
-                            { 
-                                (this.state.profile !== null && !!this.state.profile.location) ? this.state.profile.location :  "Earth" }
+                            {
+                                (this.state.profile !== null && !!this.state.profile.location) ? this.state.profile.location : "Earth"}
                         </p>
                         <p id="description-field" style={{ textAlign: "center", fontFamily: "Jost", fontSize: ".85rem", marginBottom: 0, padding: "10px 45px 20px", lineHeight: 1.3 }}>
-                            { 
-                                this.state.profile.description 
-                                ? this.truncate(this.state.profile.description, 200) 
-                                : "This user prefers to stay anonymous!" 
+                            {
+                                this.state.profile.description
+                                    ? this.truncate(this.state.profile.description, 200)
+                                    : "This user prefers to stay anonymous!"
                             }
                         </p>
-                        <br/>
+                        <br />
                     </div>
                     <div
                         style={{
@@ -294,17 +294,17 @@ export default class ProfileCard extends React.Component<Props, State> {
                                 <Form.Label>
                                     <small>Username</small>
                                 </Form.Label>
-                                <Form.Control type="username" placeholder="Enter username" defaultValue={this.props.user.getUsername()} size="sm"/>
+                                <Form.Control type="username" placeholder="Enter username" defaultValue={this.props.user.getUsername()} size="sm" />
                             </Form.Group>
 
                             <Form.Group className="mb-3">
                                 <Form.Label>
                                     <small>Location</small>
                                 </Form.Label>
-                                <Form.Control 
-                                    id="location-field" 
+                                <Form.Control
+                                    id="location-field"
                                     defaultValue={!!this.state.profile ? this.state.profile.location : undefined}
-                                    placeholder="Careful with this one!" 
+                                    placeholder="Careful with this one!"
                                     size="sm"
                                 />
                             </Form.Group>
@@ -313,9 +313,9 @@ export default class ProfileCard extends React.Component<Props, State> {
                                 <Form.Label>
                                     <small>Description</small>
                                 </Form.Label>
-                                <Form.Control 
+                                <Form.Control
                                     defaultValue={!!this.state.profile ? this.state.profile.description : undefined}
-                                    as="textarea" rows={3} 
+                                    as="textarea" rows={3}
                                     placeholder="Describe yourself!" size="sm"
                                     value={this.state.editDesc}
                                     onChange={(e) => {
@@ -331,11 +331,11 @@ export default class ProfileCard extends React.Component<Props, State> {
                 </div>
             </>
         );
-        return(
+        return (
             <>
-                <div 
-                    style={{ 
-                        background: (this.props.dark ? "#1A1A1B" : "white"), 
+                <div
+                    style={{
+                        background: (this.props.dark ? "#1A1A1B" : "white"),
                         border: (this.props.dark ? "4px solid #444" : "4px solid #dcdcdc"),
                         color: (this.props.dark ? "white" : "black"),
                         width: "100%", borderRadius: ".35rem", padding: 25,
@@ -343,25 +343,33 @@ export default class ProfileCard extends React.Component<Props, State> {
                     }}
 
                 >
-                    <img src="/assets/img/svg/logo.svg" height={43} width={43} style={{ borderRadius: ".25rem", marginBottom: 12, padding: 5 }}/>
+                    <img
+                        alt="Namespace Logo"
+                        src="/assets/img/svg/logo.svg"
+                        height={43} width={43}
+                        style={{
+                            borderRadius: ".25rem",
+                            marginBottom: 12, padding: 5
+                        }}
+                    />
                     &nbsp;
                     <span style={{ fontFamily: "Jost, sans-serif", fontSize: "22pt", fontWeight: "bold" }}>
                         Namespace
                         <sup style={{ color: "#666" }}><small>{config.version}</small></sup>
                     </span>
-                    <div style={{ padding: 5, fontVariant: "small-caps"}}>
+                    <div style={{ padding: 5, fontVariant: "small-caps" }}>
                         <Link to="/auth/login">
                             <Button size="lg" variant="primary" style={{ borderRadius: ".35rem", width: "100%", margin: 5 }}>
-                                <LogIn style={{ position: "relative", bottom: 2 }} size={20}/>
+                                <LogIn style={{ position: "relative", bottom: 2 }} size={20} />
                                 &nbsp;
                                 Log In
                             </Button>
                         </Link>
                         <Link to="/auth/signup">
-                            <Button 
-                                variant="light" 
-                                style={{ borderRadius: ".35rem", width: "100%", margin: 5, border: "1px solid #dcdcdc" }} 
-                                className={cx( this.props.dark && css`
+                            <Button
+                                variant="light"
+                                style={{ borderRadius: ".35rem", width: "100%", margin: 5, border: "1px solid #dcdcdc" }}
+                                className={cx(this.props.dark && css`
                                         background: #444;
                                         border-color: #444 !important;
                                         &, &:hover { color: white; }
@@ -371,7 +379,7 @@ export default class ProfileCard extends React.Component<Props, State> {
                                         }
                                     `)}
                             >
-                                <UserPlus style={{ position: "relative", bottom: 2 }} size={15}/>
+                                <UserPlus style={{ position: "relative", bottom: 2 }} size={15} />
                                 &nbsp;
                                 Sign Up
                             </Button>

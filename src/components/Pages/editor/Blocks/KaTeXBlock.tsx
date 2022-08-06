@@ -45,7 +45,7 @@ export default class KaTeX extends React.Component<Props, State> {
     }
 
     async showEditModal() {
-        this.setState({ 
+        this.setState({
             showEditModal: true,
             editVal: this.props.data.code
         }, () => {
@@ -66,21 +66,6 @@ export default class KaTeX extends React.Component<Props, State> {
     }
 
     render() {
-        const textBtnStyle = { 
-            marginBottom: 10, 
-            width: 90, 
-            fontVariant: "small-caps", 
-            fontSize: "1.1rem", 
-            borderRadius: ".35rem", 
-            borderWidth: "2px",
-            transitionDuration: "0s"
-        };
-        const whiteBg = css`
-            &:not(:hover) {
-                background: white;
-            }
-        `;
-
         return (
             <div style={{ minHeight: 97 }}>
                 <BlockPanel
@@ -93,7 +78,7 @@ export default class KaTeX extends React.Component<Props, State> {
                     setDidEdit={this.props.setDidEdit}
                     dark={this.props.dark}
                 />
-                <div 
+                <div
                     style={{
                         width: "100%",
                         borderRadius: ".35rem",
@@ -110,8 +95,8 @@ export default class KaTeX extends React.Component<Props, State> {
                         border-color: #dcdcdc !important;
                     `)}
                 >
-                    <TeX 
-                    className={cx(css`
+                    <TeX
+                        className={cx(css`
                         .katex {
                             white-space: unset !important;
                         }
@@ -128,12 +113,12 @@ export default class KaTeX extends React.Component<Props, State> {
                             white-space: normal !important;
                         }
                     `)}
-                    block>{this.props.data.code}</TeX>
+                        block>{this.props.data.code}</TeX>
                 </div>
-                <EditModal 
-                    header={"KaTeX"} 
-                    showEditModal={this.state.showEditModal} 
-                    discardEditModal={this.discardEditModal} 
+                <EditModal
+                    header={"KaTeX"}
+                    showEditModal={this.state.showEditModal}
+                    discardEditModal={this.discardEditModal}
                     closeEditModal={this.closeEditModal}
                     dark={this.props.dark}
                 >
@@ -151,7 +136,7 @@ export default class KaTeX extends React.Component<Props, State> {
                                     overflow: "auto",
                                     minHeight: 129.03
                                 }}>
-                                    <TeX 
+                                    <TeX
                                         settings={{ displayMode: true }}
                                         className={cx(css`
                                             .katex {
@@ -175,12 +160,12 @@ export default class KaTeX extends React.Component<Props, State> {
                                         {String.raw`${this.state.editVal}`}
                                     </TeX>
                                 </div>
-                                <br/>
+                                <br />
                                 <CodeMirror
                                     value={this.props.data.code}
                                     id={`code-${this.props.id}`}
                                     theme={this.props.dark ? darcula : undefined}
-                                    style={{ 
+                                    style={{
                                         borderRadius: ".35rem",
                                         border: "2px solid",
                                         borderColor: this.props.dark ? "#444" : " #dcdcdc",

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Form } from "react-bootstrap";
-import { ExternalLink } from  "react-feather";
+import { ExternalLink } from "react-feather";
 import BlockPanel from "./BlockPanel";
 import EditModal from "./EditModal";
 import { EmbedData } from "./types";
@@ -72,20 +72,20 @@ export default class Embed extends React.Component<Props, State> {
                     setDidEdit={this.props.setDidEdit}
                 />
                 <figure>
-                    <div 
-                        style={{ 
-                            width: "100%", 
-                            border: "1px solid #dcdcdc", 
+                    <div
+                        style={{
+                            width: "100%",
+                            border: "1px solid #dcdcdc",
                             borderBottom: 0,
-                            borderTopRightRadius: ".35rem", 
-                            borderTopLeftRadius: ".35rem", 
+                            borderTopRightRadius: ".35rem",
+                            borderTopLeftRadius: ".35rem",
                             background: "white",
                             padding: "5px 6px"
                         }}
                     >
                         &nbsp;
                         <ExternalLink
-                            style={{ padding: 5, borderRadius: ".35rem" }} 
+                            style={{ padding: 5, borderRadius: ".35rem" }}
                             size={25}
                         />
                         &nbsp;
@@ -93,20 +93,21 @@ export default class Embed extends React.Component<Props, State> {
                             {this.props.data.caption || "Embed"}
                         </span>
                     </div>
-                    <iframe 
+                    <iframe
+                        title={this.props.id}
                         src={this.props.data.link}
-                        style={{ 
-                            width: "100%", border: "1px solid #dcdcdc", 
+                        style={{
+                            width: "100%", border: "1px solid #dcdcdc",
                             borderRadius: ".35rem", height: 600,
                             borderTopRightRadius: 0,
                             borderTopLeftRadius: 0
                         }}
                     />
                 </figure>
-                <EditModal 
-                    header={"Embed"} 
-                    showEditModal={this.state.showEditModal} 
-                    discardEditModal={this.discardEditModal} 
+                <EditModal
+                    header={"Embed"}
+                    showEditModal={this.state.showEditModal}
+                    discardEditModal={this.discardEditModal}
                     closeEditModal={this.closeEditModal}
                 >
                     <Form>
@@ -114,9 +115,11 @@ export default class Embed extends React.Component<Props, State> {
                             <Form.Label>URL</Form.Label>
                             <Form.Control
                                 id={`ebd-link-${this.props.id}`}
-                                style={{ width: "100%", padding: 30, fontFamily: "Jost",
-                                        resize:"none", borderRadius: ".35rem", margin: 0,
-                                        border: "1px solid #DCDCDC" }}
+                                style={{
+                                    width: "100%", padding: 30, fontFamily: "Jost",
+                                    resize: "none", borderRadius: ".35rem", margin: 0,
+                                    border: "1px solid #DCDCDC"
+                                }}
 
                                 className={cx(css`
                                     &:focus {
@@ -131,9 +134,11 @@ export default class Embed extends React.Component<Props, State> {
                             <Form.Label>Caption</Form.Label>
                             <Form.Control
                                 id={`ebd-capt-${this.props.id}`}
-                                style={{ width: "100%", padding: 30, fontFamily: "Jost",
-                                        resize:"none", borderRadius: ".35rem", margin: 0,
-                                        border: "1px solid #DCDCDC" }}
+                                style={{
+                                    width: "100%", padding: 30, fontFamily: "Jost",
+                                    resize: "none", borderRadius: ".35rem", margin: 0,
+                                    border: "1px solid #DCDCDC"
+                                }}
 
                                 className={cx(css`
                                     &:focus {
@@ -149,8 +154,8 @@ export default class Embed extends React.Component<Props, State> {
                             {this.state.editCaption?.length}/100
                         </Form.Text>
                     </Form>
-                    <br/>
-                    <fieldset style={{ 
+                    <br />
+                    <fieldset style={{
                         border: "3px solid #dcdcdc",
                         borderRadius: ".35rem",
                         padding: "10px 20px 15px 20px",

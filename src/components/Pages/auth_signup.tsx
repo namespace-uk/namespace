@@ -175,7 +175,15 @@ export default class SignupPage extends PageBP<Props, State> {
                 <Row className={cx(Styles.small_row_width)}>
                     <div className={cx(Styles.signup_box_s)}>
                         <div>
-                            <img src="/assets/img/svg/logo.svg" height={39} width={39} style={{ borderRadius: ".25rem", marginBottom: 8, padding: 5 }} />
+                            <img
+                                alt="Namespace Logo"
+                                src="/assets/img/svg/logo.svg"
+                                height={39} width={39}
+                                style={{
+                                    borderRadius: ".25rem",
+                                    marginBottom: 8, padding: 5
+                                }}
+                            />
                             &nbsp;
                             <span style={{ fontFamily: "Jost, sans-serif", fontSize: "17pt", fontWeight: "bold" }}>
                                 Namespace

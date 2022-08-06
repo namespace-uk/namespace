@@ -1,8 +1,8 @@
 import * as React from "react";
 
 import { css, cx } from "@emotion/css";
-import { Button, Col, Container, Form, Modal, Row } from "react-bootstrap";
-import { X as Cross, Check, Copy, X } from "react-feather";
+import { Col, Container, Form, Row } from "react-bootstrap";
+import { Copy } from "react-feather";
 import BlockPanel from "./BlockPanel";
 import { CodeBlockData } from "./types";
 
@@ -82,48 +82,48 @@ export default class CodeBlock extends React.Component<Props, State> {
                     setDidEdit={this.props.setDidEdit}
                     dark={this.props.dark}
                 />
-                 <>
-                        <div 
-                            style={{ 
-                                width: "100%", 
-                                border: "1px solid", 
-                                borderBottom: 0,
-                                borderTopRightRadius: ".35rem", 
-                                borderTopLeftRadius: ".35rem", 
-                                background: this.props.dark ? "#1A1A1B" : "white",
-                                borderColor: this.props.dark ? "#444" : "#dcdcdc",
-                                padding: "5px 6px"
-                            }}
-                        >
-                            &nbsp;&nbsp;
-                            <Copy 
-                                style={{ padding: 5, borderRadius: ".35rem" }} 
-                                className={cx(css`
+                <>
+                    <div
+                        style={{
+                            width: "100%",
+                            border: "1px solid",
+                            borderBottom: 0,
+                            borderTopRightRadius: ".35rem",
+                            borderTopLeftRadius: ".35rem",
+                            background: this.props.dark ? "#1A1A1B" : "white",
+                            borderColor: this.props.dark ? "#444" : "#dcdcdc",
+                            padding: "5px 6px"
+                        }}
+                    >
+                        &nbsp;&nbsp;
+                        <Copy
+                            style={{ padding: 5, borderRadius: ".35rem" }}
+                            className={cx(css`
                                     ${this.props.dark && "color: whitesmoke;"}
                                     &:hover { 
                                         background: ${this.props.dark ? "#444" : "whitesmoke"};
                                         cursor: pointer;
                                     }
-                                `)} 
-                                size={25}
-                            />
-                            <span style={{ float: "right", color: "grey", fontFamily: "Jost" }}>
-                                {this.props.data.lang}
-                                &nbsp;&nbsp;
-                            </span>
-                        </div>
-                        <pre style={{ 
-                            padding: 25, border: "1px solid", 
-                            borderBottomRightRadius: ".35rem", 
-                            borderBottomLeftRadius: ".35rem", 
-                            fontSize: "87.5%", lineHeight: 1.6,
-                            marginBottom: 0, maxWidth: "calc(100vw - 30px)",
-                            background: this.props.dark ? "#1A1A1B" : "white",
-                            borderColor: this.props.dark ? "#444" : "#dcdcdc",
-                            color: this.props.dark ? "whitesmoke" : "black"
-                        }}>
-                            <code
-                                className={cx(css`
+                                `)}
+                            size={25}
+                        />
+                        <span style={{ float: "right", color: "grey", fontFamily: "Jost" }}>
+                            {this.props.data.lang}
+                            &nbsp;&nbsp;
+                        </span>
+                    </div>
+                    <pre style={{
+                        padding: 25, border: "1px solid",
+                        borderBottomRightRadius: ".35rem",
+                        borderBottomLeftRadius: ".35rem",
+                        fontSize: "87.5%", lineHeight: 1.6,
+                        marginBottom: 0, maxWidth: "calc(100vw - 30px)",
+                        background: this.props.dark ? "#1A1A1B" : "white",
+                        borderColor: this.props.dark ? "#444" : "#dcdcdc",
+                        color: this.props.dark ? "whitesmoke" : "black"
+                    }}>
+                        <code
+                            className={cx(css`
                                     pre {
                                         background: inherit !important;
                                         padding: 0px !important;
@@ -134,21 +134,21 @@ export default class CodeBlock extends React.Component<Props, State> {
                                         padding-bottom: 10px !important;
                                     }
                                 `)}
-                            >
-                                {
-                                    this.props.data.lang === "plain" ? this.props.data.code : (
-                                        <SyntaxHighlighter language={this.props.data.lang} style={this.props.dark ? dark : undefined}>
-                                            {this.props.data.code}
-                                        </SyntaxHighlighter>
-                                    )
-                                }
-                            </code>
-                        </pre>
+                        >
+                            {
+                                this.props.data.lang === "plain" ? this.props.data.code : (
+                                    <SyntaxHighlighter language={this.props.data.lang} style={this.props.dark ? dark : undefined}>
+                                        {this.props.data.code}
+                                    </SyntaxHighlighter>
+                                )
+                            }
+                        </code>
+                    </pre>
                 </>
                 <EditModal
                     header="Code Block"
-                    showEditModal={this.state.showEditModal} 
-                    discardEditModal={this.discardEditModal} 
+                    showEditModal={this.state.showEditModal}
+                    discardEditModal={this.discardEditModal}
                     closeEditModal={this.closeEditModal}
                     dark={this.props.dark}
                 >
@@ -159,7 +159,7 @@ export default class CodeBlock extends React.Component<Props, State> {
                                     value={this.props.data.code}
                                     id={`code-${this.props.id}`}
                                     theme={this.props.dark ? darcula : undefined}
-                                    style={{ 
+                                    style={{
                                         borderRadius: ".45rem",
                                         border: "2px solid",
                                         borderColor: this.props.dark ? "#444" : " #dcdcdc",
@@ -185,8 +185,8 @@ export default class CodeBlock extends React.Component<Props, State> {
                                     }}
                                     height="300px"
                                 />
-                                <br/>
-                                <fieldset style={{ 
+                                <br />
+                                <fieldset style={{
                                     border: this.props.dark ? "3px solid #444" : "3px solid #dcdcdc",
                                     borderRadius: ".35rem",
                                     padding: "10px 20px 15px 20px",
@@ -202,9 +202,9 @@ export default class CodeBlock extends React.Component<Props, State> {
                                                 <Form>
                                                     <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                                                         <Form.Label>Syntax Highlighting</Form.Label>
-                                                        <Form.Control 
-                                                            as="select" 
-                                                            id={`lang-select-${this.props.id}`} 
+                                                        <Form.Control
+                                                            as="select"
+                                                            id={`lang-select-${this.props.id}`}
                                                             defaultValue={this.props.data.lang}
                                                             style={{
                                                                 borderColor: this.props.dark ? "#444" : "#dcdcdc",
@@ -213,7 +213,7 @@ export default class CodeBlock extends React.Component<Props, State> {
                                                             }}
                                                         >
                                                             <option value="plain">None</option>
-                                                            <hr/>
+                                                            <hr />
                                                             {
                                                                 [
                                                                     { value: "javascript", text: "Javascript" },
@@ -231,7 +231,7 @@ export default class CodeBlock extends React.Component<Props, State> {
                                                                     { value: "java", text: "Java" },
                                                                     { value: "latex", text: "LaTeX" },
                                                                     { value: "makefile", text: "Makefile" },
-                                                                    { value: "sql", text: "SQL"},
+                                                                    { value: "sql", text: "SQL" },
                                                                     { value: "scala", text: "Scala" },
                                                                     { value: "python", text: "Python" },
                                                                     { value: "haskell", text: "Haskell" },

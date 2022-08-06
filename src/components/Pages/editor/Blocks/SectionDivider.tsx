@@ -1,7 +1,7 @@
 import { css, cx } from "@emotion/css";
 import * as React from "react";
-import { Button, Col, Container, Form, InputGroup, Modal, Row} from "react-bootstrap";
-import { Slash, Check, Trash2, Hash, Edit3 } from "react-feather";
+import { Col, Container, Form, Row } from "react-bootstrap";
+import { Hash } from "react-feather";
 import BlockPanel from "./BlockPanel";
 import EditModal from "./EditModal";
 import { SectionData } from "./types";
@@ -65,8 +65,8 @@ export default class SectionDivider extends React.Component<Props, State> {
                     dark={this.props.dark}
                 />
                 <div
-                    style={{ 
-                        width: "100%", 
+                    style={{
+                        width: "100%",
                         fontFamily: "Jost",
                         fontWeight: "bold",
                         fontSize: 35,
@@ -78,13 +78,13 @@ export default class SectionDivider extends React.Component<Props, State> {
                         padding: 20
                     }}
                 >
-                    <Hash size={25} color="grey"/>
+                    <Hash size={25} color="grey" />
                     {(this.props.data as { header: string }).header}
                 </div>
-                <EditModal 
-                    header={"Section"} 
-                    showEditModal={this.state.showEditModal} 
-                    discardEditModal={this.discardEditModal} 
+                <EditModal
+                    header={"Section"}
+                    showEditModal={this.state.showEditModal}
+                    discardEditModal={this.discardEditModal}
                     closeEditModal={this.closeEditModal}
                     dark={this.props.dark}
                 >
@@ -94,9 +94,9 @@ export default class SectionDivider extends React.Component<Props, State> {
                                 <Form.Control
                                     size="lg"
                                     id={`sec-${this.props.id}`}
-                                    style={{ 
+                                    style={{
                                         width: "100%", padding: 30, fontFamily: "Jost",
-                                        resize:"none", borderRadius: ".35rem", margin: 0,
+                                        resize: "none", borderRadius: ".35rem", margin: 0,
                                         border: "1px solid",
                                         borderColor: this.props.dark ? "#444" : "#dcdcdc",
                                         background: this.props.dark ? "#1A1A1B" : "white",

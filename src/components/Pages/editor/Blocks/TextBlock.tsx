@@ -56,7 +56,7 @@ export default class TextBlock extends React.Component<Props, State> {
 
     count(s: string) {
         s = s.trim();
-        return s == '' ? 0 : s.split(/\s+\b/).length;
+        return s === '' ? 0 : s.split(/\s+\b/).length;
     }
 
     async showEditModal() {
@@ -83,7 +83,7 @@ export default class TextBlock extends React.Component<Props, State> {
 
     render() {
         return (
-            <div 
+            <div
                 style={{ minHeight: 97 }}
                 className={cx(css`
                     @media(max-width: 992px) {
@@ -108,9 +108,9 @@ export default class TextBlock extends React.Component<Props, State> {
                     setDidEdit={this.props.setDidEdit}
                     dark={this.props.dark}
                 />
-                <div 
-                    style={{ 
-                        width: "100%", background: this.props.dark ? "#1A1A1B" : "white", 
+                <div
+                    style={{
+                        width: "100%", background: this.props.dark ? "#1A1A1B" : "white",
                         border: "1px solid", borderColor: this.props.dark ? "#444" : "#dcdcdc",
                         borderRadius: ".35rem", fontFamily: "Jost", fontSize: 17, padding: 40,
                         whiteSpace: "pre-wrap", overflowWrap: "anywhere",
@@ -124,8 +124,8 @@ export default class TextBlock extends React.Component<Props, State> {
                 >
                     {
                         (this.props.data.type === "markdown") ? (
-                            <ReactMarkdown 
-                                remarkPlugins={[remarkGfm, remarkMath]} 
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm, remarkMath]}
                                 rehypePlugins={[rehypeKatex]}
                                 className={cx(css`
                                     .contains-task-list {
@@ -166,11 +166,11 @@ export default class TextBlock extends React.Component<Props, State> {
                         ) : (this.props.data.text)
                     }
                 </div>
-                <button hidden id={`open-edit-modal-${this.props.id}`} onClick={() => { this.setState({ showEditModal: true }); }}/>
-                <EditModal 
-                    header={"Paragraph"} 
-                    showEditModal={this.state.showEditModal} 
-                    discardEditModal={this.discardEditModal} 
+                <button hidden id={`open-edit-modal-${this.props.id}`} onClick={() => { this.setState({ showEditModal: true }); }} />
+                <EditModal
+                    header={"Paragraph"}
+                    showEditModal={this.state.showEditModal}
+                    discardEditModal={this.discardEditModal}
                     closeEditModal={this.closeEditModal}
                     dark={this.props.dark}
                 >
@@ -178,12 +178,12 @@ export default class TextBlock extends React.Component<Props, State> {
                         <Row>
                             <Col>
                                 {
-                                    this.state.type == "plain" ? (
+                                    this.state.type === "plain" ? (
                                         <textarea
                                             id={`txt-${this.props.id}`}
-                                            style={{ 
-                                                width: "100%", padding: 20, fontFamily: "Jost", height:"50vh",
-                                                resize:"none", borderRadius: ".35rem", margin: 0,
+                                            style={{
+                                                width: "100%", padding: 20, fontFamily: "Jost", height: "50vh",
+                                                resize: "none", borderRadius: ".35rem", margin: 0,
                                                 border: "1px solid", fontSize: "13pt", marginBottom: 2,
                                                 borderColor: this.props.dark ? "#444" : "#dcdcdc",
                                                 background: this.props.dark ? "#1A1A1B" : "white",
@@ -209,7 +209,7 @@ export default class TextBlock extends React.Component<Props, State> {
                                             value={this.state.editVal}
                                             id={`code-${this.props.id}`}
                                             theme={this.props.dark ? darcula : undefined}
-                                            style={{ 
+                                            style={{
                                                 borderRadius: ".35rem",
                                                 border: "1px solid",
                                                 borderColor: this.props.dark ? "#444" : "#dcdcdc",
@@ -238,19 +238,19 @@ export default class TextBlock extends React.Component<Props, State> {
                                             height="50vh"
                                         />
                                     )
-                                    
+
                                 }
                                 <small className="text-muted" hidden={this.state.type !== "plain"}>
                                     &nbsp;
                                     {
                                         (() => {
-                                         const length = this.count(this.state.editVal);
-                                         return (length + ' ' + (length === 1 ? "word" : "words"));
+                                            const length = this.count(this.state.editVal);
+                                            return (length + ' ' + (length === 1 ? "word" : "words"));
                                         })()
                                     }
                                 </small>
                                 <small style={{ float: "right", marginTop: 5 }}>
-                                    <span 
+                                    <span
                                         className={cx(css`
                                             font-size: 10pt;
                                             padding: 5px 10px;
@@ -260,18 +260,18 @@ export default class TextBlock extends React.Component<Props, State> {
                                             ${this.props.dark && "color: whitesmoke;"}
                                         `, this.state.type !== "plain" ? css`
                                             &:hover { 
-                                                background: ${ this.props.dark ? "#444" : "rgba(0, 0, 0, 0.08)"};
+                                                background: ${this.props.dark ? "#444" : "rgba(0, 0, 0, 0.08)"};
                                                 cursor: pointer;
                                             }
                                         ` : css`
-                                            background: ${ this.props.dark ? "#444" : "rgba(0, 0, 0, 0.08)"};
-                                        `)} 
+                                            background: ${this.props.dark ? "#444" : "rgba(0, 0, 0, 0.08)"};
+                                        `)}
                                         onClick={() => { this.setState({ type: "plain" }); }}
                                     >
                                         Plain
                                     </span>
                                     &nbsp;
-                                    <span 
+                                    <span
                                         className={cx(css`
                                             font-size: 10pt;
                                             padding: 5px 10px;
@@ -281,12 +281,12 @@ export default class TextBlock extends React.Component<Props, State> {
                                             ${this.props.dark && "color: whitesmoke;"}
                                         `, this.state.type !== "markdown" ? css`
                                             &:hover { 
-                                                background: ${ this.props.dark ? "#444" : "rgba(0, 0, 0, 0.08)"};
+                                                background: ${this.props.dark ? "#444" : "rgba(0, 0, 0, 0.08)"};
                                                 cursor: pointer;
                                             }
                                         ` : css`
-                                            background: ${ this.props.dark ? "#444" : "rgba(0, 0, 0, 0.08)"};
-                                        `)} 
+                                            background: ${this.props.dark ? "#444" : "rgba(0, 0, 0, 0.08)"};
+                                        `)}
                                         onClick={() => { this.setState({ type: "markdown" }); }}
                                     >
                                         Markdown
