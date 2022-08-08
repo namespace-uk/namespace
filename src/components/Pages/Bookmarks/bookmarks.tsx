@@ -52,11 +52,11 @@ export default class Bookmarks extends PageBP<Props, State> {
         this.init();
     }
 
-    init() {
+    init = async () => {
         if (!this.state.user) return;
         const username = this.state.user.getUsername();
 
-        fetch(config.endpoints.getBookmarks, {
+        await fetch(config.endpoints.getBookmarks, {
             method: "POST",
             body: JSON.stringify({
                 username: username
@@ -65,8 +65,11 @@ export default class Bookmarks extends PageBP<Props, State> {
             .then(data => {
                 this.setState({
                     guides: data.bookmarks,
-                    hasLoaded: true,
-                    listHandler: new ListHandler(username, data.bookmarks, this.forceUpdate.bind(this))
+                    hasLoaded: true
+                }, () => {
+                    this.setState({
+                        listHandler: new ListHandler(username, data.bookmarks, this.forceUpdate.bind(this))
+                    })
                 });
             })
     }

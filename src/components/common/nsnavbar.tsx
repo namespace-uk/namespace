@@ -2,7 +2,7 @@ import React from "react";
 import { Link, Redirect } from "react-router-dom";
 
 import { Button, OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
-import { Bookmark, Folder, Globe, Home, LogOut, Moon, Plus, Sun, User } from "react-feather";
+import { Bookmark, Folder, Globe, Home, LogOut, Moon, Plus, Settings, Sun, User } from "react-feather";
 import CStyles from "./common_styles";
 import config from "../../config";
 
@@ -480,14 +480,13 @@ export default class NsNavbar extends React.Component<Props, State> {
                                                     Lists
                                                 </Button>
                                             </Link>
-                                            {/*<br/>
-                                                <Link to="/preferences">
-                                                    <Button variant="light" className={cx( Styles.user_menu_btn_s )} style={{ width: "100%" }}>
-                                                        <Settings size={16} color="#666"/>
-                                                        &nbsp;
-                                                        Preferences
-                                                    </Button>
-                                                </Link>*/}
+                                            <Link to="/preferences">
+                                                <Button variant="light" className={cx(Styles.user_menu_btn_s)} style={{ width: "100%" }}>
+                                                    <Settings size={16} color="#666" />
+                                                    &nbsp;
+                                                    Preferences
+                                                </Button>
+                                            </Link>
                                             <br />
                                             <Button variant="light" className={cx(Styles.user_menu_btn_s)} style={{ width: "100%" }} onClick={this.signout}>
                                                 <LogOut size={16} style={{ position: "relative", bottom: 2 }} color="#666" />

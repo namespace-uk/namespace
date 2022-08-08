@@ -79,45 +79,56 @@ const TimelineCard: React.FC<{
                                 />
                             </h5>
                             <br />
-                            {
-                                props.moreData ? props.moreData.lists.map(x => (
-                                    <Button
-                                        style={{ border: 0, width: "100%", marginBottom: 10 }}
-                                        className={cx(props.dark ? css`
-                                            background: #444 !important;
-                                            color: whitesmoke;
-                                            &:hover, &:active, &:focus {
-                                                background: #666 !important;
-                                            }
-                                        ` : css`
-                                            background: whitesmoke !important;
-                                            &, &:hover, &:active, &:focus {
-                                                color: #333 !important;
-                                            }
-                                            &:hover, &:active, &:focus {
-                                                background: #DDD !important;
-                                            }
-                                        `, x.activeState === ActiveState.ON && css`
-                                            border: 3px solid var(--success) !important;
-                                            padding: calc(.375rem - 3px) calc(.75rem - 3px);
-                                        `, x.activeState === ActiveState.PENDING && css`
-                                            border: 3px solid var(--primary) !important;
-                                            padding: calc(.375rem - 3px) calc(.75rem - 3px);
-                                            opacity: .5;
-                                        `)}
-                                        onClick={() => { if (props.moreData) props.moreData.toggleListInclude(x.l.id, props.moreData.index); }}
-                                        disabled={x.activeState === ActiveState.PENDING}
-                                    >
-                                        {x.l.header}
-                                        <span
-                                            style={{ zIndex: 3, position: "absolute", right: "calc(50% - 20px)" }}
-                                            hidden={x.activeState !== ActiveState.PENDING}
-                                        >
-                                            <PulseLoader color="var(--primary)" size={10} />
-                                        </span>
-                                    </Button>
-                                )) : <BounceLoader size={40} color={props.dark ? "whitesmoke" : "#666"} />
-                            }
+                            <div
+                                style={{
+                                    maxHeight: "calc(100vh - 400px)",
+                                    minHeight: props.moreData && props.moreData.lists.length > 4 ? 200 : 0,
+                                    overflowY: "auto",
+                                    borderRadius: ".25rem"
+                                }}
+                            >
+                                <div style={{ position: "relative" }}>
+                                    {
+                                        props.moreData ? props.moreData.lists.map(x => (
+                                            <Button
+                                                style={{ border: 0, width: "100%", marginBottom: 10 }}
+                                                className={cx(props.dark ? css`
+                                                background: #444 !important;
+                                                color: whitesmoke;
+                                                &:hover, &:active, &:focus {
+                                                    background: #666 !important;
+                                                }
+                                            ` : css`
+                                                background: whitesmoke !important;
+                                                &, &:hover, &:active, &:focus {
+                                                    color: #333 !important;
+                                                }
+                                                &:hover, &:active, &:focus {
+                                                    background: #DDD !important;
+                                                }
+                                            `, x.activeState === ActiveState.ON && css`
+                                                border: 3px solid var(--success) !important;
+                                                padding: calc(.375rem - 3px) calc(.75rem - 3px);
+                                            `, x.activeState === ActiveState.PENDING && css`
+                                                border: 3px solid var(--primary) !important;
+                                                padding: calc(.375rem - 3px) calc(.75rem - 3px);
+                                                opacity: .5;
+                                            `)}
+                                                onClick={() => { if (props.moreData) props.moreData.toggleListInclude(x.l.id, props.moreData.index); }}
+                                                disabled={x.activeState === ActiveState.PENDING}
+                                            >
+                                                {x.l.header}
+                                                <span
+                                                    style={{ zIndex: 3, position: "absolute", right: "calc(50% - 20px)" }}
+                                                    hidden={x.activeState !== ActiveState.PENDING}
+                                                >
+                                                    <PulseLoader color="var(--primary)" size={10} />
+                                                </span>
+                                            </Button>
+                                        )) : <BounceLoader size={40} color={props.dark ? "whitesmoke" : "#666"} />
+                                    }
+                                </div>
+                            </div>
                             {
                                 props.moreData && props.moreData.lists.length === 0 && (
                                     <div

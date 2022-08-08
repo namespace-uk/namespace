@@ -993,7 +993,10 @@ export default class Editor extends PageBP<Props, State> {
                                         </div>
                                     </Col>
                                 </Row>
-                                <hr style={{ marginTop: 30, marginBottom: 30 }} />
+                                <hr
+                                    style={{ marginTop: 30, marginBottom: 30 }}
+                                    color={this.state.dark ? "#444" : "#dcdcdc"}
+                                />
                                 <Row>
                                     <Col>
                                         <Form.Group onChange={this.updateHeaderEditValues}>
@@ -1012,7 +1015,7 @@ export default class Editor extends PageBP<Props, State> {
                                                 `)}
                                             />
                                         </Form.Group>
-
+                                        <div style={{ height: 15 }} />
                                         <Form.Group onChange={this.updateHeaderEditValues}>
                                             <Form.Label style={{ fontSize: 22 }}>Description</Form.Label>
                                             <Form.Control
