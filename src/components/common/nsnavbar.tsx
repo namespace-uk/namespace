@@ -2,7 +2,7 @@ import React from "react";
 import { Link, Redirect } from "react-router-dom";
 
 import { Button, OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
-import { Bookmark, Folder, Globe, Home, LogOut, Moon, Plus, Settings, Sun, User } from "react-feather";
+import { Bookmark, Folder, Globe, Home, LogOut, Moon, Plus, Sun, User } from "react-feather";
 import CStyles from "./common_styles";
 import config from "../../config";
 
