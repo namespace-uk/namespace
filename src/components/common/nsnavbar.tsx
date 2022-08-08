@@ -480,13 +480,13 @@ export default class NsNavbar extends React.Component<Props, State> {
                                                     Lists
                                                 </Button>
                                             </Link>
-                                            <Link to="/preferences">
+                                            {/*<Link to="/preferences">
                                                 <Button variant="light" className={cx(Styles.user_menu_btn_s)} style={{ width: "100%" }}>
                                                     <Settings size={16} color="#666" />
                                                     &nbsp;
                                                     Preferences
                                                 </Button>
-                                            </Link>
+                                            </Link>*/}
                                             <br />
                                             <Button variant="light" className={cx(Styles.user_menu_btn_s)} style={{ width: "100%" }} onClick={this.signout}>
                                                 <LogOut size={16} style={{ position: "relative", bottom: 2 }} color="#666" />
