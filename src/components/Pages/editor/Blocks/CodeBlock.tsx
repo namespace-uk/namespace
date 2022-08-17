@@ -72,16 +72,6 @@ export default class CodeBlock extends React.Component<Props, State> {
     render() {
         return (
             <div style={{ minHeight: 97 }}>
-                <BlockPanel
-                    id={this.props.id}
-                    showEditModal={this.showEditModal}
-                    removeBlock={this.props.removeBlock}
-                    editBlock={this.props.editBlock}
-                    moveBlockUp={this.props.moveBlockUp}
-                    moveBlockDown={this.props.moveBlockDown}
-                    setDidEdit={this.props.setDidEdit}
-                    dark={this.props.dark}
-                />
                 <>
                     <div
                         style={{
@@ -90,8 +80,8 @@ export default class CodeBlock extends React.Component<Props, State> {
                             borderBottom: 0,
                             borderTopRightRadius: ".35rem",
                             borderTopLeftRadius: ".35rem",
-                            background: this.props.dark ? "#1A1A1B" : "white",
-                            borderColor: this.props.dark ? "#444" : "#dcdcdc",
+                            background: this.props.dark ? "#161616" : "white",
+                            borderColor: this.props.dark ? "#343434" : "#dcdcdc",
                             padding: "5px 6px"
                         }}
                     >
@@ -101,7 +91,7 @@ export default class CodeBlock extends React.Component<Props, State> {
                             className={cx(css`
                                     ${this.props.dark && "color: whitesmoke;"}
                                     &:hover { 
-                                        background: ${this.props.dark ? "#444" : "whitesmoke"};
+                                        background: ${this.props.dark ? "#343434" : "whitesmoke"};
                                         cursor: pointer;
                                     }
                                 `)}
@@ -113,17 +103,18 @@ export default class CodeBlock extends React.Component<Props, State> {
                         </span>
                     </div>
                     <pre style={{
-                        padding: 25, border: "1px solid",
+                        border: "1px solid",
                         borderBottomRightRadius: ".35rem",
                         borderBottomLeftRadius: ".35rem",
                         fontSize: "87.5%", lineHeight: 1.6,
                         marginBottom: 0, maxWidth: "calc(100vw - 30px)",
-                        background: this.props.dark ? "#1A1A1B" : "white",
-                        borderColor: this.props.dark ? "#444" : "#dcdcdc",
+                        background: this.props.dark ? "#161616" : "white",
+                        borderColor: this.props.dark ? "#343434" : "#dcdcdc",
                         color: this.props.dark ? "whitesmoke" : "black"
                     }}>
-                        <code
-                            className={cx(css`
+                        <div style={{ padding: 25 }}>
+                            <code
+                                className={cx(css`
                                     pre {
                                         background: inherit !important;
                                         padding: 0px !important;
@@ -134,15 +125,27 @@ export default class CodeBlock extends React.Component<Props, State> {
                                         padding-bottom: 10px !important;
                                     }
                                 `)}
-                        >
-                            {
-                                this.props.data.lang === "plain" ? this.props.data.code : (
-                                    <SyntaxHighlighter language={this.props.data.lang} style={this.props.dark ? dark : undefined}>
-                                        {this.props.data.code}
-                                    </SyntaxHighlighter>
-                                )
-                            }
-                        </code>
+                            >
+                                {
+                                    this.props.data.lang === "plain" ? this.props.data.code : (
+                                        <SyntaxHighlighter language={this.props.data.lang} style={this.props.dark ? dark : undefined}>
+                                            {this.props.data.code}
+                                        </SyntaxHighlighter>
+                                    )
+                                }
+                            </code>
+                        </div>
+                        <BlockPanel
+                            id={this.props.id}
+                            showEditModal={this.showEditModal}
+                            removeBlock={this.props.removeBlock}
+                            editBlock={this.props.editBlock}
+                            moveBlockUp={this.props.moveBlockUp}
+                            moveBlockDown={this.props.moveBlockDown}
+                            setDidEdit={this.props.setDidEdit}
+                            dark={this.props.dark}
+                            blockName="Code"
+                        />
                     </pre>
                 </>
                 <EditModal
@@ -162,7 +165,7 @@ export default class CodeBlock extends React.Component<Props, State> {
                                     style={{
                                         borderRadius: ".45rem",
                                         border: "2px solid",
-                                        borderColor: this.props.dark ? "#444" : " #dcdcdc",
+                                        borderColor: this.props.dark ? "#343434" : " #dcdcdc",
                                         outline: "none"
                                     }}
                                     className={cx(css`
@@ -175,7 +178,7 @@ export default class CodeBlock extends React.Component<Props, State> {
                                             }
                                         }
                                         .cm-gutters {
-                                            ${this.props.dark && "background: #444;"}
+                                            ${this.props.dark && "background: #343434;"}
                                         }
                                     `)}
                                     onChange={(value, y) => {
@@ -187,7 +190,7 @@ export default class CodeBlock extends React.Component<Props, State> {
                                 />
                                 <br />
                                 <fieldset style={{
-                                    border: this.props.dark ? "3px solid #444" : "3px solid #dcdcdc",
+                                    border: this.props.dark ? "3px solid #343434" : "3px solid #dcdcdc",
                                     borderRadius: ".35rem",
                                     padding: "10px 20px 15px 20px",
                                     fontFamily: "Jost",
@@ -207,8 +210,8 @@ export default class CodeBlock extends React.Component<Props, State> {
                                                             id={`lang-select-${this.props.id}`}
                                                             defaultValue={this.props.data.lang}
                                                             style={{
-                                                                borderColor: this.props.dark ? "#444" : "#dcdcdc",
-                                                                background: this.props.dark ? "#1A1A1B" : "white",
+                                                                borderColor: this.props.dark ? "#343434" : "#dcdcdc",
+                                                                background: this.props.dark ? "#161616" : "white",
                                                                 color: this.props.dark ? "whitesmoke" : "#333"
                                                             }}
                                                         >

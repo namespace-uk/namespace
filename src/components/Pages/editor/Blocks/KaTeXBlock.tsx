@@ -68,35 +68,25 @@ export default class KaTeX extends React.Component<Props, State> {
     render() {
         return (
             <div style={{ minHeight: 97 }}>
-                <BlockPanel
-                    id={this.props.id}
-                    showEditModal={this.showEditModal}
-                    removeBlock={this.props.removeBlock}
-                    editBlock={this.props.editBlock}
-                    moveBlockUp={this.props.moveBlockUp}
-                    moveBlockDown={this.props.moveBlockDown}
-                    setDidEdit={this.props.setDidEdit}
-                    dark={this.props.dark}
-                />
                 <div
                     style={{
                         width: "100%",
                         borderRadius: ".35rem",
                         border: "1px solid",
-                        padding: 25,
                         overflow: "auto"
                     }}
                     className={cx(this.props.dark ? css`
-                        background: #1A1A1B;
-                        border-color: #444 !important;
+                        background: #161616;
+                        border-color: #343434 !important;
                         color: whitesmoke;
                     ` : css`
                         background: white;
                         border-color: #dcdcdc !important;
                     `)}
                 >
-                    <TeX
-                        className={cx(css`
+                    <div style={{ padding: 25 }}>
+                        <TeX
+                            className={cx(css`
                         .katex {
                             white-space: unset !important;
                         }
@@ -113,7 +103,20 @@ export default class KaTeX extends React.Component<Props, State> {
                             white-space: normal !important;
                         }
                     `)}
-                        block>{this.props.data.code}</TeX>
+                            block>{this.props.data.code}
+                        </TeX>
+                    </div>
+                    <BlockPanel
+                        id={this.props.id}
+                        showEditModal={this.showEditModal}
+                        removeBlock={this.props.removeBlock}
+                        editBlock={this.props.editBlock}
+                        moveBlockUp={this.props.moveBlockUp}
+                        moveBlockDown={this.props.moveBlockDown}
+                        setDidEdit={this.props.setDidEdit}
+                        dark={this.props.dark}
+                        blockName="LaTeX"
+                    />
                 </div>
                 <EditModal
                     header={"KaTeX"}
@@ -129,8 +132,8 @@ export default class KaTeX extends React.Component<Props, State> {
                                     width: "100%",
                                     borderRadius: ".35rem",
                                     border: "1px solid",
-                                    background: this.props.dark ? "#1A1A1B" : "white",
-                                    borderColor: this.props.dark ? "#444" : "#dcdcdc",
+                                    background: this.props.dark ? "#161616" : "white",
+                                    borderColor: this.props.dark ? "#343434" : "#dcdcdc",
                                     color: this.props.dark ? "white" : "black",
                                     padding: 25,
                                     overflow: "auto",
@@ -168,7 +171,7 @@ export default class KaTeX extends React.Component<Props, State> {
                                     style={{
                                         borderRadius: ".35rem",
                                         border: "2px solid",
-                                        borderColor: this.props.dark ? "#444" : " #dcdcdc",
+                                        borderColor: this.props.dark ? "#343434" : " #dcdcdc",
                                         outline: "none"
                                     }}
                                     className={cx(css`

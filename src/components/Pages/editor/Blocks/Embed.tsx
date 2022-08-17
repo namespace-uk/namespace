@@ -70,6 +70,7 @@ export default class Embed extends React.Component<Props, State> {
                     moveBlockUp={this.props.moveBlockUp}
                     moveBlockDown={this.props.moveBlockDown}
                     setDidEdit={this.props.setDidEdit}
+                    blockName="Embed"
                 />
                 <figure>
                     <div
