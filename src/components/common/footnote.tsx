@@ -1,5 +1,7 @@
 import * as React from "react";
+import { GitHub } from "react-feather";
 import { Link } from "react-router-dom";
+import CStyles from "../common/common_styles";
 
 export const Footnote: React.FC<{ dark?: boolean }> = props => (
     <div
@@ -23,6 +25,15 @@ export const Footnote: React.FC<{ dark?: boolean }> = props => (
                 </Link>
             ))
         }
+        <div key="gh-link" style={{ whiteSpace: "nowrap", fontSize: ".8rem" }}>
+            <GitHub size={12} style={{ marginBottom: 2 }} />
+            &nbsp;
+            <a
+                className={CStyles.flat_link}
+                href="https://github.com/namespace-uk/namespace"
+                style={{ color: "inherit", textDecoration: "underline" }}
+            >GitHub</a>
+        </div>
         <div key="copyright" style={{ whiteSpace: "nowrap", fontSize: ".8rem" }}>
             © Musab Guma'a 2022
         </div>
