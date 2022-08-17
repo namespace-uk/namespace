@@ -287,7 +287,7 @@ export default class Editor extends PageBP<Props, State> {
         this.setDidEdit();
     }
 
-    async addBlock(type: string, data: any, after?: string) {
+    async addBlock(type: string, data: any, after?: string, scrollAfter?: boolean) {
         const guide = this.state.guide;
         if (guide == null) return;
 
@@ -298,10 +298,7 @@ export default class Editor extends PageBP<Props, State> {
             type: type,
             data: data
         };
-        console.log("Created Block");
-        console.log(block);
 
-        console.log("Adding to Guide...");
         if (after) {
             // If the block is not the last
             // Insert in the correct position
@@ -315,7 +312,6 @@ export default class Editor extends PageBP<Props, State> {
             guide.blocks.push(block);
         }
 
-        console.log("Updating State...");
         this.setState({
             guide: guide,
             didEdit: true,
@@ -324,46 +320,49 @@ export default class Editor extends PageBP<Props, State> {
             if (!after) {
                 $(`#edit-${id}`).trigger('click');
             }
+            if (scrollAfter) {
+                window.scrollTo(0, document.body.scrollHeight);
+            }
         });
     }
 
-    async addTextBlock(after?: string) {
+    async addTextBlock(after?: string, scrollAfter?: boolean) {
         this.addBlock("text", {
             text: "",
             type: "markdown"
-        }, after);
+        }, after, scrollAfter);
     }
 
-    addKatexBlock = async (after?: string) => {
+    addKatexBlock = async (after?: string, scrollAfter?: boolean) => {
         this.addBlock("katex", {
             code: ""
-        }, after);
+        }, after, scrollAfter);
     }
 
-    addImageBlock = async (after?: string) => {
+    addImageBlock = async (after?: string, scrollAfter?: boolean) => {
         this.addBlock("img", {
             caption: ""
-        }, after);
+        }, after, scrollAfter);
     }
 
-    async addCodeBlock(after?: string) {
+    async addCodeBlock(after?: string, scrollAfter?: boolean) {
         this.addBlock("code", {
             code: "Type here",
             lang: "plain"
-        }, after);
+        }, after, scrollAfter);
     }
 
-    async addSection(after?: string) {
+    async addSection(after?: string, scrollAfter?: boolean) {
         this.addBlock("section", {
             header: "New Section"
-        }, after);
+        }, after, scrollAfter);
     }
 
-    async addEmbed(after?: string) {
+    async addEmbed(after?: string, scrollAfter?: boolean) {
         this.addBlock("embed", {
             link: "",
             caption: ""
-        }, after);
+        }, after, scrollAfter);
     }
 
     openHeaderEditModal() {
@@ -470,7 +469,7 @@ export default class Editor extends PageBP<Props, State> {
                         <div
                             className={cx("text-center list-group-item-secondary",
                                 (this.state.dark && css`
-                                    background: #444;
+                                    background: #343434;
                                     color: whitesmoke;
                                 `)
                             )}
@@ -503,6 +502,89 @@ export default class Editor extends PageBP<Props, State> {
             }
         `;
 
+        const addBlockPanel = (label: string) => (
+            <fieldset
+                style={{
+                    border: "3px solid",
+                    borderRadius: ".55rem",
+                    padding: "5px 10px 10px",
+                    fontFamily: "Jost",
+                    borderColor: (this.state.dark ? "#343434" : "#dcdcdc"),
+                    color: (this.state.dark ? "whitesmoke" : "black"),
+                    background: this.state.dark ? "#161616" : "white"
+                }}
+            >
+                <legend style={{ width: "auto", fontSize: "14pt", marginBottom: 0 }}>
+                    &nbsp;{label}&nbsp;
+                </legend>
+                <div
+                    style={{
+                        width: "100%",
+                        borderRadius: ".35rem",
+                        padding: 10
+                    }}
+                >
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-evenly",
+                            flexWrap: "wrap",
+                            gap: 10
+                        }}
+                    >
+                        {
+                            [
+                                { type: "text", tooltip: "Paragraph", icon: (<AlignJustify size={25} />), fn: this.addTextBlock },
+                                {
+                                    type: "katex", tooltip: "KaTeX Block", icon: (
+                                        <svg viewBox="0 0 1200 500" style={{ width: 36, height: "auto" }}>
+                                            <path d="m5.46 4.23h-.25c-.1 1.02-.24 2.26-2 2.26h-.81c-.47 0-.49-.07-.49-.4v-5.31c0-.34 0-.48.94-.48h.33v-.3c-.36.03-1.26.03-1.67.03-.39 0-1.17 0-1.51-.03v.3h.23c.77 0 .79.11.79.47v5.25c0 .36-.02.47-.79.47h-.23v.31h5.19z" transform="matrix(45 0 0 45 40 47.65)" />
+                                            <path d="m2.81.16c-.04-.12-.06-.16-.19-.16s-.16.04-.2.16l-1.61 4.08c-.07.17-.19.48-.81.48v.25h1.55v-.25c-.31 0-.5-.14-.5-.34 0-.05.01-.07.03-.14 0 0 .34-.86.34-.86h1.98l.4 1.02c.02.04.04.09.04.12 0 .2-.38.2-.57.2v.25h1.97v-.25h-.14c-.47 0-.52-.07-.59-.27 0 0-1.7-4.29-1.7-4.29zm-.4.71.89 2.26h-1.78z" transform="matrix(45 0 0 45 151.6 40)" />
+                                            <path d="m6.27 0h-6.09s-.18 2.24-.18 2.24h.24c.14-1.61.29-1.94 1.8-1.94.18 0 .44 0 .54.02.21.04.21.15.21.38v5.25c0 .34 0 .48-1.05.48h-.4v.31c.41-.03 1.42-.03 1.88-.03s1.49 0 1.9.03v-.31h-.4c-1.05 0-1.05-.14-1.05-.48v-5.25c0-.2 0-.34.18-.38.11-.02.38-.02.57-.02 1.5 0 1.65.33 1.79 1.94h.25s-.19-2.24-.19-2.24z" transform="matrix(45 0 0 45 356.35 50.35)" />
+                                            <path d="m6.16 4.2h-.25c-.25 1.53-.48 2.26-2.19 2.26h-1.32c-.47 0-.49-.07-.49-.4v-2.66h.89c.97 0 1.08.32 1.08 1.17h.25v-2.64h-.25c0 .85-.11 1.16-1.08 1.16h-.89v-2.39c0-.33.02-.4.49-.4h1.28c1.53 0 1.79.55 1.95 1.94h.25l-.28-2.24h-5.6v.3h.23c.77 0 .79.11.79.47v5.22c0 .36-.02.47-.79.47h-.23v.31h5.74z" transform="matrix(45 0 0 45 602.5 150.25)" />
+                                            <path d="m3.76 2.95 1.37-2c.21-.32.55-.64 1.44-.65v-.3h-2.38v.3c.4.01.62.23.62.46 0 .1-.02.12-.09.23 0 0-1.14 1.68-1.14 1.68l-1.28-1.92c-.02-.03-.07-.11-.07-.15 0-.12.22-.29.64-.3v-.3c-.34.03-1.07.03-1.45.03-.31 0-.93-.01-1.3-.03v.3h.19c.55 0 .74.07.93.35 0 0 1.83 2.77 1.83 2.77l-1.63 2.41c-.14.2-.44.66-1.44.66v.31h2.38v-.31c-.46-.01-.63-.28-.63-.46 0-.09.03-.13.1-.24l1.41-2.09 1.58 2.38c.02.04.05.08.05.11 0 .12-.22.29-.65.3v.31c.35-.03 1.08-.03 1.45-.03.42 0 .88.01 1.3.03v-.31h-.19c-.52 0-.73-.05-.94-.36 0 0-2.1-3.18-2.1-3.18z" transform="matrix(45 0 0 45 845.95 47.65)" />
+                                        </svg>
+                                    ), fn: this.addKatexBlock
+                                },
+                                { type: "img", tooltip: "Image", icon: (<Image size={25} />), fn: this.addImageBlock },
+                                { type: "code", tooltip: "Code Block", icon: (<Code size={25} />), fn: this.addCodeBlock },
+                                { type: "section", tooltip: "Subtitle", icon: (<Type size={25} />), fn: this.addSection },
+                                // { type: "embed"  , tooltip: "Embed"      , icon: (<LinkIcon size={25}/>)  , fn: this.addEmbed }
+                            ].map(x => (
+                                <OverlayTrigger
+                                    key={`k-new-block-${x.type}`}
+                                    placement="bottom"
+                                    overlay={
+                                        <Tooltip id={`new-block-${x.type}-tooltip`}>
+                                            {x.tooltip}
+                                        </Tooltip>
+                                    }
+                                >
+                                    <Button
+                                        variant="outline-secondary"
+                                        style={{
+                                            flexGrow: 65, height: 64
+                                        }}
+                                        className={cx(PageBP.Styles.button(this.state.dark), css`
+                                                            & > svg { 
+                                                                color: ${this.state.dark ? "whitesmoke" : ""}; 
+                                                                ${x.type === "katex" && (
+                                                this.state.dark ? "fill: white" : "fill: #444"
+                                            )};
+                                                            }
+                                                        `)}
+                                        onClick={() => { x.fn(undefined, true); }}
+                                    >
+                                        {x.icon}
+                                    </Button>
+                                </OverlayTrigger>
+                            ))
+                        }
+                    </div>
+                </div>
+            </fieldset>
+        );
+
         return (
             <Template user={this.state.user} dark={this.state.dark} setDarkMode={this.setDarkMode} localStorage={this.localStorage!}>
                 <Prompt
@@ -532,15 +614,16 @@ export default class Editor extends PageBP<Props, State> {
                         </LocationCard>
                         <br />
                         <div>
-                            <div hidden={!this.state.editing}
+                            <div hidden={!this.state.editing || true}
                                 style={{
                                     position: "absolute", left: -45,
                                     fontFamily: "Jost", padding: 6,
-                                    background: this.state.dark ? "#1A1A1B" : "#dcdcdc",
+                                    background: this.state.dark ? "#161616" : "white",
+                                    border: this.state.dark ? "none" : "1px solid #dcdcdc",
                                     borderRadius: ".7rem"
                                 }}>
                                 <Button
-                                    variant="outline-primary"
+                                    /*variant="outline-primary"
                                     style={{
                                         width: 40,
                                         height: 40,
@@ -552,12 +635,17 @@ export default class Editor extends PageBP<Props, State> {
                                     }}
                                     className={cx(css`
                                         &:not(:hover) {
-                                            background: ${this.state.dark ? "#1A1A1B" : "white"};
+                                            background: ${this.state.dark ? "#161616" : "white"};
                                         }
                                         @media(max-width: 992px) {
                                             display: none;
                                         }
-                                    `)}
+                                    `)}*/
+                                    style={{
+                                        width: 40,
+                                        height: 40
+                                    }}
+                                    className={PageBP.Styles.button(this.state.dark)}
                                     onClick={this.openHeaderEditModal}
                                 >
                                     <Edit3 size={20} style={{ position: "relative", bottom: 2, right: 3 }} />
@@ -565,35 +653,93 @@ export default class Editor extends PageBP<Props, State> {
                             </div>
                             <div
                                 style={{
-                                    background: (this.state.dark ? "#1A1A1B" : "white"),
+                                    background: (this.state.dark ? "#161616" : "white"),
                                     color: (this.state.dark ? "whitesmoke" : "black"),
-                                    border: (this.state.dark ? "3px solid #444" : "3px solid #dcdcdc"),
-                                    borderRadius: ".35rem", padding: 40,
+                                    border: "3px solid",
+                                    borderColor: (this.state.dark ? "#343434" : "#dcdcdc"),
+                                    borderRadius: ".55rem"
                                 }}
                             >
-                                <h2
-                                    style={{ fontFamily: "Jost, sans-serif", fontWeight: "bold", color: (this.state.dark ? "whitesmoke" : "#333") }}
+                                <div style={{ padding: 30 }}>
+                                    <h3
+                                        style={{ fontFamily: "Jost, sans-serif", fontWeight: "bold", color: (this.state.dark ? "whitesmoke" : "#333") }}
+                                    >
+                                        {this.state.guide.header}
+                                    </h3>
+                                    <h6 style={{ color: "#666", fontFamily: "Jost" }}>
+                                        {this.state.guide.timestamp.toDateString()}
+                                    </h6>
+                                    {
+                                        this.state.guide.description && (
+                                            <>
+                                                <br />
+                                                <p style={{ margin: 0, wordBreak: "break-word", overflow: "hidden", fontFamily: "Jost" }}>
+                                                    {this.state.guide.description}
+                                                </p>
+                                            </>
+                                        )
+                                    }
+                                </div>
+                                <div
+                                    hidden={!this.state.editing}
+                                    style={{
+                                        fontFamily: "Jost", padding: "10px 15px", borderTop: "1px solid",
+                                        borderColor: this.state.dark ? "#343434" : "#dcdcdc",
+                                        display: "flex", justifyContent: "space-between",
+                                        alignItems: "baseline"
+                                    }}
                                 >
-                                    {this.state.guide.header}
-                                </h2>
-                                <h6 style={{ color: "#666", fontFamily: "Jost" }}>
-                                    {this.state.guide.timestamp.toDateString()}
-                                </h6>
-                                {
-                                    this.state.guide.description && (
-                                        <>
-                                            <br />
-                                            <p style={{ margin: 0, wordBreak: "break-word", overflow: "hidden", fontFamily: "Jost" }}>
-                                                {this.state.guide.description}
-                                            </p>
-                                        </>
-                                    )
-                                }
+                                    <span
+                                        style={{
+                                            fontSize: "14pt",
+                                            color: "gray",
+                                            marginLeft: 10
+                                        }}
+                                    >
+                                        Title
+                                    </span>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "flex-end",
+                                            float: "right"
+                                        }}
+                                    >
+                                        <Button variant="light" size="sm"
+                                            style={{
+                                                borderRadius: ".35rem", border: "3px solid",
+                                                paddingBottom: 2,
+                                                fontWeight: "bold", color: "whitesmoke",
+                                                borderColor: "#238636", background: "#238636" // this.state.dark ? "#343434" : "#dcdcdc"
+                                            }}
+                                            className={cx(css`
+                                                background: ${this.state.dark ? "#161616" : "white"};
+                                            `, css`
+                                                &:hover {
+                                                    background: var(--success) !important;
+                                                    border-color: var(--success) !important;
+                                                }
+                                            `)}
+                                            onClick={this.openHeaderEditModal}
+                                        >
+                                            <Edit3 size={17} style={{ position: "relative", bottom: 3 }} />
+                                            &nbsp;&nbsp;
+                                            Edit
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div style={{ height: 25 }} hidden={this.state.editing} />
                         {
                             !this.state.editing && BlockRenderer.render(this.state.showBlocks, this.state.dark)
+                        }
+                        {
+                            this.state.guide.blocks.length === 0 && (
+                                <div style={{ marginTop: 25 }}>
+                                    {addBlockPanel("Choose your first block")}
+                                </div>
+                            )
                         }
                         {
                             this.state.editing && this.state.guide.blocks.map(x => [
@@ -630,31 +776,24 @@ export default class Editor extends PageBP<Props, State> {
                                                 { type: "katex", tooltip: "KaTeX Block", fn: this.addKatexBlock },
                                                 { type: "img", tooltip: "Image", fn: this.addImageBlock },
                                                 { type: "code", tooltip: "Code Block", fn: this.addCodeBlock },
-                                                { type: "section", tooltip: "New Section", fn: this.addSection },
+                                                { type: "section", tooltip: "Subtitle", fn: this.addSection },
                                                 // { type: "embed"  , tooltip: "Embed"      , fn: this.addEmbed }
                                             ].map(y => (
                                                 <span
-                                                    style={{ borderRadius: ".35rem" }}
-                                                    className={cx(css`
-                                                    transition: all .25s;
-                                                    border: 2px solid var(--secondary);
-                                                    color: var(--secondary);
-                                                    padding: 3px;
-                                                    font-size: 10pt;
-                                                    background: ${this.state.dark ? "#1A1A1B" : "white"};
-                                                    &:hover {
-                                                        background: var(--secondary);
-                                                        color: white;
-                                                        cursor: pointer;
-                                                    }
-                                                `)}
+                                                    className={cx(PageBP.Styles.button(this.state.dark, !this.state.dark), css`
+                                                        transition: all .25s;
+                                                        padding: 5px;
+                                                        font-size: 10pt;
+                                                        &:hover {
+                                                            cursor: pointer;
+                                                        }
+                                                    `)}
                                                     onClick={() => { y.fn(x.id); }}
                                                 >
                                                     &nbsp;{y.tooltip}&nbsp;
                                                 </span>
                                             )).map(x => [x, <>&nbsp;&nbsp;</>])
                                         }
-                                        {/* <div style={{ height: 15, margin: 5, borderRadius: ".35rem" }} className={cx(css`&:hover { cursor: pointer; background: rgba(0, 0, 0, 0.1); }`)}/> */}
                                     </div>
                                 ),
                                 (() => {
@@ -724,20 +863,20 @@ export default class Editor extends PageBP<Props, State> {
                                 })()
                             ])
                         }
-                        <br />
                         <div style={{ maxWidth: "calc(100vw - 30px)" }}>
                             <div hidden={!this.state.editing}>
                                 <div
+                                    hidden
                                     style={{
                                         width: "100%",
-                                        border: "3px solid var(--secondary)",
+                                        border: "3px solid #dcdcdc",
                                         borderBottom: 0,
                                         borderTopRightRadius: ".35rem",
                                         borderTopLeftRadius: ".35rem",
-                                        background: this.state.dark ? "#1A1A1B" : "white",
-                                        padding: "5px 6px",
+                                        background: this.state.dark ? "#161616" : "white",
+                                        padding: "5px 40px",
                                         fontFamily: "Jost",
-                                        textAlign: "center",
+                                        // textAlign: "center",
                                         fontWeight: "bold",
                                         fontSize: "14pt",
                                         color: this.state.dark ? "white" : "var(--secondary)"
@@ -745,89 +884,6 @@ export default class Editor extends PageBP<Props, State> {
                                 >
                                     &nbsp;
                                     Add a Block
-                                </div>
-                                <div
-                                    style={{
-                                        width: "100%",
-                                        border: "3px solid var(--secondary)",
-                                        borderRadius: ".35rem",
-                                        borderTopRightRadius: 0,
-                                        borderTopLeftRadius: 0,
-                                        padding: 30,
-                                        background: this.state.dark ? "#1A1A1B" : "white",
-                                        display: "flex",
-                                        justifyContent: "space-evenly",
-                                        flexWrap: "wrap",
-                                        gap: 10
-                                    }}
-                                >
-                                    {/*<fieldset style={{ 
-                                    border: "3px solid #dcdcdc",
-                                    borderRadius: ".35rem",
-                                    padding: "25px 30px 30px",
-                                    fontFamily: "Jost",
-                                    position: "sticky", 
-                                    top: 25,
-                                    display: "flex",
-                                    justifyContent: "space-evenly"
-                                }}>
-                            <legend style={{ width: "auto", fontSize: "14pt", marginBottom: 0, textAlign: "center" }}>&nbsp;Add a Block&nbsp;</legend>*/}
-                                    {
-                                        [
-                                            { type: "text", tooltip: "Paragraph", icon: (<AlignJustify size={25} />), fn: this.addTextBlock },
-                                            {
-                                                type: "katex", tooltip: "KaTeX Block", icon: (
-                                                    <svg viewBox="0 0 1200 500" style={{ width: 36, height: "auto" }}>
-                                                        <path d="m5.46 4.23h-.25c-.1 1.02-.24 2.26-2 2.26h-.81c-.47 0-.49-.07-.49-.4v-5.31c0-.34 0-.48.94-.48h.33v-.3c-.36.03-1.26.03-1.67.03-.39 0-1.17 0-1.51-.03v.3h.23c.77 0 .79.11.79.47v5.25c0 .36-.02.47-.79.47h-.23v.31h5.19z" transform="matrix(45 0 0 45 40 47.65)" />
-                                                        <path d="m2.81.16c-.04-.12-.06-.16-.19-.16s-.16.04-.2.16l-1.61 4.08c-.07.17-.19.48-.81.48v.25h1.55v-.25c-.31 0-.5-.14-.5-.34 0-.05.01-.07.03-.14 0 0 .34-.86.34-.86h1.98l.4 1.02c.02.04.04.09.04.12 0 .2-.38.2-.57.2v.25h1.97v-.25h-.14c-.47 0-.52-.07-.59-.27 0 0-1.7-4.29-1.7-4.29zm-.4.71.89 2.26h-1.78z" transform="matrix(45 0 0 45 151.6 40)" />
-                                                        <path d="m6.27 0h-6.09s-.18 2.24-.18 2.24h.24c.14-1.61.29-1.94 1.8-1.94.18 0 .44 0 .54.02.21.04.21.15.21.38v5.25c0 .34 0 .48-1.05.48h-.4v.31c.41-.03 1.42-.03 1.88-.03s1.49 0 1.9.03v-.31h-.4c-1.05 0-1.05-.14-1.05-.48v-5.25c0-.2 0-.34.18-.38.11-.02.38-.02.57-.02 1.5 0 1.65.33 1.79 1.94h.25s-.19-2.24-.19-2.24z" transform="matrix(45 0 0 45 356.35 50.35)" />
-                                                        <path d="m6.16 4.2h-.25c-.25 1.53-.48 2.26-2.19 2.26h-1.32c-.47 0-.49-.07-.49-.4v-2.66h.89c.97 0 1.08.32 1.08 1.17h.25v-2.64h-.25c0 .85-.11 1.16-1.08 1.16h-.89v-2.39c0-.33.02-.4.49-.4h1.28c1.53 0 1.79.55 1.95 1.94h.25l-.28-2.24h-5.6v.3h.23c.77 0 .79.11.79.47v5.22c0 .36-.02.47-.79.47h-.23v.31h5.74z" transform="matrix(45 0 0 45 602.5 150.25)" />
-                                                        <path d="m3.76 2.95 1.37-2c.21-.32.55-.64 1.44-.65v-.3h-2.38v.3c.4.01.62.23.62.46 0 .1-.02.12-.09.23 0 0-1.14 1.68-1.14 1.68l-1.28-1.92c-.02-.03-.07-.11-.07-.15 0-.12.22-.29.64-.3v-.3c-.34.03-1.07.03-1.45.03-.31 0-.93-.01-1.3-.03v.3h.19c.55 0 .74.07.93.35 0 0 1.83 2.77 1.83 2.77l-1.63 2.41c-.14.2-.44.66-1.44.66v.31h2.38v-.31c-.46-.01-.63-.28-.63-.46 0-.09.03-.13.1-.24l1.41-2.09 1.58 2.38c.02.04.05.08.05.11 0 .12-.22.29-.65.3v.31c.35-.03 1.08-.03 1.45-.03.42 0 .88.01 1.3.03v-.31h-.19c-.52 0-.73-.05-.94-.36 0 0-2.1-3.18-2.1-3.18z" transform="matrix(45 0 0 45 845.95 47.65)" />
-                                                    </svg>
-                                                ), fn: this.addKatexBlock
-                                            },
-                                            { type: "img", tooltip: "Image", icon: (<Image size={25} />), fn: this.addImageBlock },
-                                            { type: "code", tooltip: "Code Block", icon: (<Code size={25} />), fn: this.addCodeBlock },
-                                            { type: "section", tooltip: "New Section", icon: (<Type size={25} />), fn: this.addSection },
-                                            // { type: "embed"  , tooltip: "Embed"      , icon: (<LinkIcon size={25}/>)  , fn: this.addEmbed }
-                                        ].map(x => (
-                                            <OverlayTrigger
-                                                key={`k-new-block-${x.type}`}
-                                                placement="bottom"
-                                                overlay={
-                                                    <Tooltip id={`new-block-${x.type}-tooltip`}>
-                                                        {x.tooltip}
-                                                    </Tooltip>
-                                                }
-                                            >
-                                                <Button
-                                                    variant="outline-secondary"
-                                                    className={cx(CStyles.flat_link, css`
-                                                            border-width: 3px;
-                                                            border-radius: 50%;
-                                                            width: 65px;
-                                                            height: 64px;
-                                                            outline: none;
-
-                                                            & > svg { 
-                                                                color: ${this.state.dark ? "whitesmoke" : "var(--secondary)"}; 
-                                                                ${x.type === "katex" && (
-                                                            this.state.dark ? "fill: white" : "fill: var(--secondary)"
-                                                        )
-                                                        };
-                                                            }
-                                                            &:hover > svg { 
-                                                                color: white; 
-                                                                ${x.type === "katex" && "fill: white;"}
-                                                            }
-                                                        `)}
-                                                    onClick={() => { x.fn(); }}
-                                                >
-                                                    {x.icon}
-                                                </Button>
-                                            </OverlayTrigger>
-                                        ))
-                                    }
                                 </div>
                             </div>
                         </div>
@@ -845,18 +901,29 @@ export default class Editor extends PageBP<Props, State> {
                             <fieldset
                                 style={{
                                     border: "3px solid",
-                                    borderRadius: ".35rem",
-                                    padding: "15px 20px 20px",
+                                    borderRadius: ".55rem",
+                                    padding: "10px 20px 20px",
                                     fontFamily: "Jost",
-                                    borderColor: (this.state.dark ? "#444" : "#dcdcdc"),
-                                    color: (this.state.dark ? "whitesmoke" : "black")
+                                    borderColor: (this.state.dark ? "#343434" : "#dcdcdc"),
+                                    color: (this.state.dark ? "whitesmoke" : "black"),
+                                    background: this.state.dark ? "#161616" : "white"
                                 }}
                             >
                                 <legend style={{ width: "auto", fontSize: "14pt", marginBottom: 0 }}>&nbsp;Controls&nbsp;</legend>
                                 <Button
-                                    variant="outline-secondary"
-                                    style={{ width: "100%", display: "block", borderRadius: ".35rem", borderWidth: "3px", transition: "background 0s" }}
-                                    className={cx(css`background: ${this.state.dark ? "#1A1A1B" : "white"};`)}
+                                    variant={!this.state.dark && false ? "outline-secondary" : undefined}
+                                    style={{
+                                        ...{ width: "100%", display: "block" },
+                                        ...(!this.state.dark && false ? {
+                                            borderRadius: ".35rem",
+                                            borderWidth: "3px",
+                                            transition: "background 0s"
+                                        } : {})
+                                    }}
+                                    className={!this.state.dark && false ?
+                                        cx() //cx(css`background: ${this.state.dark ? "#161616" : "white"};`)
+                                        : PageBP.Styles.button(this.state.dark, false, "danger")
+                                    }
                                     onClick={() => { this.setState({ showDeleteModal: true }) }}
                                 >
                                     <Trash2 size={17} style={{ position: "relative", bottom: 2 }} />
@@ -864,9 +931,8 @@ export default class Editor extends PageBP<Props, State> {
                                     Delete Guide
                                 </Button>
                                 <Button
-                                    variant={!this.state.guide.isPrivate ? "secondary" : "outline-secondary"}
-                                    style={{ width: "100%", display: "block", borderRadius: ".35rem", borderWidth: "3px", marginTop: 10, transition: "background 0s" }}
-                                    className={cx(this.state.guide.isPrivate && css`background: ${this.state.dark ? "#1A1A1B" : "white"};`)}
+                                    style={{ width: "100%", display: "block", marginTop: 10, border: "1px solid #666;" }}
+                                    className={PageBP.Styles.button(this.state.dark)}
                                     onClick={this.toggleVisibility}
                                 >
                                     {
@@ -890,7 +956,7 @@ export default class Editor extends PageBP<Props, State> {
                                         <Button
                                             variant="outline-danger"
                                             style={{ width: "100%", display: "block", borderRadius: ".35rem", borderWidth: "3px", marginTop: 10, transition: "background 0s" }}
-                                            className={cx(css`background: ${this.state.dark ? "#1A1A1B" : "white"};`)}
+                                            className={cx(css`background: ${this.state.dark ? "#161616" : "white"};`)}
                                             onClick={() => this.applyChanges()}
                                             disabled={this.state.saving}
                                         >
@@ -905,6 +971,8 @@ export default class Editor extends PageBP<Props, State> {
                                     ) : null
                                 }
                             </fieldset>
+                            <br />
+                            {this.state.guide.blocks.length !== 0 && addBlockPanel("Append a Block")}
                             <Footnote dark={this.state.dark} />
                         </div>
                         <Modal
@@ -913,7 +981,7 @@ export default class Editor extends PageBP<Props, State> {
                             style={{ fontFamily: "Jost" }}
                             className={cx(css`
                                 .modal-content{
-                                    border: 5px solid ${this.state.dark ? "#444" : "#dcdcdc"};
+                                    border: 5px solid ${this.state.dark ? "#343434" : "#dcdcdc"};
                                     borderRadius: 0.35rem;
                                 }
                             `)}
@@ -922,7 +990,7 @@ export default class Editor extends PageBP<Props, State> {
                             <Modal.Body
                                 style={{ fontSize: "16pt" }}
                                 className={cx(this.state.dark && css`
-                                    background: #1A1A1B;
+                                    background: #161616;
                                     color: whitesmoke;
                                 `)}
                             >
@@ -939,14 +1007,16 @@ export default class Editor extends PageBP<Props, State> {
                                             <div style={{ padding: 10 }}>
                                                 <Button
                                                     variant="outline-secondary"
-                                                    style={{ borderWidth: 3, borderRadius: ".35rem", width: "calc(50% - 2.5px)", marginRight: 5 }}
+                                                    style={{ borderRadius: ".35rem", width: "calc(50% - 2.5px)", marginRight: 5 }}
+                                                    className={PageBP.Styles.button(this.state.dark)}
                                                     onClick={() => { this.setState({ showDeleteModal: false }); }}
                                                 >
                                                     Keep
                                                 </Button>
                                                 <Button
                                                     variant="outline-danger"
-                                                    style={{ borderWidth: 3, borderRadius: ".35rem", width: "calc(50% - 2.5px)" }}
+                                                    style={{ borderRadius: ".35rem", width: "calc(50% - 2.5px)" }}
+                                                    className={PageBP.Styles.button(this.state.dark)}
                                                     onClick={() => { this.setState({ deleting: true }); this.deleteGuide(); }}
                                                 >
                                                     Delete
@@ -974,9 +1044,9 @@ export default class Editor extends PageBP<Props, State> {
                                         <h4>Preview</h4>
                                         <div
                                             style={{
-                                                background: (this.state.dark ? "#1A1A1B" : "white"),
+                                                background: (this.state.dark ? "#161616" : "white"),
                                                 color: (this.state.dark ? "whitesmoke" : "black"),
-                                                border: (this.state.dark ? "1px solid #444" : "1px solid #dcdcdc"),
+                                                border: (this.state.dark ? "1px solid #343434" : "1px solid #dcdcdc"),
                                                 borderRadius: ".35rem", padding: 40,
                                             }}
                                         >
@@ -995,7 +1065,7 @@ export default class Editor extends PageBP<Props, State> {
                                 </Row>
                                 <hr
                                     style={{ marginTop: 30, marginBottom: 30 }}
-                                    color={this.state.dark ? "#444" : "#dcdcdc"}
+                                    color={this.state.dark ? "#343434" : "#dcdcdc"}
                                 />
                                 <Row>
                                     <Col>
@@ -1008,8 +1078,8 @@ export default class Editor extends PageBP<Props, State> {
                                                 id="edit-title"
                                                 className={cx(this.state.dark && css`
                                                     &, &:active, &:focus, &:hover {
-                                                        background: #1A1A1B;
-                                                        border-color: #444;
+                                                        background: #161616;
+                                                        border-color: #343434;
                                                         color: whitesmoke;
                                                     }
                                                 `)}
@@ -1026,8 +1096,8 @@ export default class Editor extends PageBP<Props, State> {
                                                 id="edit-desc"
                                                 className={cx(this.state.dark && css`
                                                     &, &:active, &:focus, &:hover {
-                                                        background: #1A1A1B;
-                                                        border-color: #444;
+                                                        background: #161616;
+                                                        border-color: #343434;
                                                         color: whitesmoke;
                                                     }
                                                 `)}
@@ -1073,7 +1143,7 @@ export default class Editor extends PageBP<Props, State> {
                             </Modal>*/}
                     </Col>
                 </Row>
-            </Template>
+            </Template >
         )
     }
 }
