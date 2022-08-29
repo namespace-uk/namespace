@@ -75,7 +75,8 @@ export default class BlockPanel extends React.Component<Props, State> {
                         style={{
                             fontSize: "14pt",
                             color: "gray",
-                            marginLeft: 5
+                            marginLeft: 5,
+                            fontWeight: "normal"
                         }}
                     >
                         {this.props.blockName}
@@ -113,7 +114,6 @@ export default class BlockPanel extends React.Component<Props, State> {
                             onClick={this.props.showEditModal}
                         >
                             <Edit3 size={17} style={{ position: "relative", bottom: 2 }} />
-
                         </Btn>
                     </div>
                 </div>

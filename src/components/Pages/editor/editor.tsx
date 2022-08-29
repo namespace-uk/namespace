@@ -52,7 +52,7 @@ interface Props extends RouteComponentProps<MatchParams> { };
 type State = {
     dark: boolean,
     guide: Guide | null,
-    didEdit: boolean,
+    didEdit: NodeJS.Timeout | null,
     currentlyEditing: string | null,
     showHeaderEditModal: boolean,
     headerEditModalValues: any,
@@ -79,7 +79,7 @@ export default class Editor extends PageBP<Props, State> {
         this.state = {
             dark: this.localStorage!.getItem("darkmode") === "true",
             guide: null,
-            didEdit: false,
+            didEdit: null,
             currentlyEditing: null,
             showHeaderEditModal: false,
             headerEditModalValues: {},
@@ -150,10 +150,22 @@ export default class Editor extends PageBP<Props, State> {
         const guide = this.state.guide;
         if (guide != null)
             guide.blocks = guide.blocks.filter(x => x.id !== blockid);
-        this.setState({ guide: guide, didEdit: true });
+        this.setState({
+            guide: guide,
+            didEdit: this.getAutosaveTimeout()
+        });
     }
 
-    setDidEdit = async () => this.setState({ didEdit: true });
+    clearAutosaveTimeout = () => {
+        if (this.state.didEdit) clearTimeout(this.state.didEdit);
+        return null;
+    }
+    getAutosaveTimeout = () => {
+        if (this.state.didEdit) clearTimeout(this.state.didEdit);
+        return setTimeout(this.applyChanges, 2000);
+    }
+
+    setDidEdit = async () => this.setState({ didEdit: this.getAutosaveTimeout() });
 
     deleteGuide = () => {
         const guide = this.state.guide;
@@ -211,7 +223,7 @@ export default class Editor extends PageBP<Props, State> {
         }
     }
 
-    async applyChanges() {
+    applyChanges = async () => {
         this.setState({ saving: true });
         const guide = this.state.guide;
         if (guide == null) return;
@@ -220,7 +232,10 @@ export default class Editor extends PageBP<Props, State> {
             method: "POST",
             body: JSON.stringify(guide)
         }).then(() => {
-            this.setState({ didEdit: false, saving: false });
+            this.setState({
+                didEdit: this.clearAutosaveTimeout(),
+                saving: false
+            });
         });
     }
 
@@ -243,7 +258,7 @@ export default class Editor extends PageBP<Props, State> {
         guide.isPrivate = !!!guide.isPrivate;
         this.setState({
             guide: guide,
-            didEdit: true
+            didEdit: this.getAutosaveTimeout()
         });
     }
 
@@ -314,7 +329,7 @@ export default class Editor extends PageBP<Props, State> {
 
         this.setState({
             guide: guide,
-            didEdit: true,
+            didEdit: this.getAutosaveTimeout(),
             newBlockId: id
         }, () => {
             if (!after) {
@@ -385,7 +400,7 @@ export default class Editor extends PageBP<Props, State> {
         this.setState({
             showHeaderEditModal: false,
             guide: guide,
-            didEdit: true
+            didEdit: this.getAutosaveTimeout()
         });
     }
 
@@ -588,7 +603,7 @@ export default class Editor extends PageBP<Props, State> {
         return (
             <Template user={this.state.user} dark={this.state.dark} setDarkMode={this.setDarkMode} localStorage={this.localStorage!}>
                 <Prompt
-                    when={this.state.didEdit}
+                    when={this.state.didEdit !== null}
                     message='You have unsaved changes, are you sure you want to leave?'
                 />
                 <Row>
@@ -623,24 +638,6 @@ export default class Editor extends PageBP<Props, State> {
                                     borderRadius: ".7rem"
                                 }}>
                                 <Button
-                                    /*variant="outline-primary"
-                                    style={{
-                                        width: 40,
-                                        height: 40,
-                                        fontVariant: "small-caps",
-                                        fontSize: "1.1rem",
-                                        borderRadius: ".35rem",
-                                        borderWidth: "2px",
-                                        transitionDuration: "0s"
-                                    }}
-                                    className={cx(css`
-                                        &:not(:hover) {
-                                            background: ${this.state.dark ? "#161616" : "white"};
-                                        }
-                                        @media(max-width: 992px) {
-                                            display: none;
-                                        }
-                                    `)}*/
                                     style={{
                                         width: 40,
                                         height: 40
@@ -708,7 +705,7 @@ export default class Editor extends PageBP<Props, State> {
                                         <Button variant="light" size="sm"
                                             style={{
                                                 borderRadius: ".35rem", border: "3px solid",
-                                                paddingBottom: 2,
+                                                paddingBottom: 2, height: 39,
                                                 fontWeight: "bold", color: "whitesmoke",
                                                 borderColor: "#238636", background: "#238636" // this.state.dark ? "#343434" : "#dcdcdc"
                                             }}
@@ -722,20 +719,18 @@ export default class Editor extends PageBP<Props, State> {
                                             `)}
                                             onClick={this.openHeaderEditModal}
                                         >
-                                            <Edit3 size={17} style={{ position: "relative", bottom: 3 }} />
-                                            &nbsp;&nbsp;
-                                            Edit
+                                            <Edit3 size={17} style={{ position: "relative", bottom: 2 }} />
                                         </Button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div style={{ height: 25 }} hidden={this.state.editing} />
+                        <div style={{ height: 15 }} hidden={this.state.editing} />
                         {
                             !this.state.editing && BlockRenderer.render(this.state.showBlocks, this.state.dark)
                         }
                         {
-                            this.state.guide.blocks.length === 0 && (
+                            this.state.guide.blocks.length === 0 && this.state.editing && (
                                 <div style={{ marginTop: 25 }}>
                                     {addBlockPanel("Choose your first block")}
                                 </div>
@@ -745,42 +740,48 @@ export default class Editor extends PageBP<Props, State> {
                             this.state.editing && this.state.guide.blocks.map(x => [
                                 (
                                     <div
-                                        style={{ display: "flex", justifyContent: "center", padding: 5, borderRadius: ".35rem", fontFamily: "Jost" }}
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            borderRadius: ".35rem",
+                                            fontFamily: "Jost"
+                                        }}
                                         className={cx(css`
-                                        transition: all .3s;
-                                        transition-delay: .1s;
-                                        span {
-                                            visibility: hidden;
-                                            transition: 0s;
-                                            transition-delay: .2s;
-                                            transition-property: visibility;
-                                        }
-                                        &:not(:hover) {
-                                            height: 25px;
-                                        }
-                                        &:hover { 
-                                            height: 40px;
-                                            /*cursor: pointer;
-                                            background: rgba(0, 0, 0, 0.1);*/
-                                            transition-delay: 0s;
+                                            transition: all .3s;
+                                            transition-delay: .1s;
                                             span {
-                                                visibility: visible;
-                                                transition-delay: .1s;
+                                                visibility: hidden;
+                                                transition: 0s;
+                                                transition-delay: .2s;
+                                                transition-property: visibility;
                                             }
-                                        }
-                                    `)}
+                                            &:not(:hover) {
+                                                height: 25px;
+                                            }
+                                            &:hover { 
+                                                height: 40px;
+                                                /*cursor: pointer;
+                                                background: rgba(0, 0, 0, 0.1);*/
+                                                transition-delay: 0s;
+                                                span {
+                                                    visibility: visible;
+                                                    transition-delay: .1s;
+                                                }
+                                            }
+                                        `)}
                                     >
-                                        {
-                                            [
-                                                { type: "text", tooltip: "Paragraph", fn: this.addTextBlock },
-                                                { type: "katex", tooltip: "KaTeX Block", fn: this.addKatexBlock },
-                                                { type: "img", tooltip: "Image", fn: this.addImageBlock },
-                                                { type: "code", tooltip: "Code Block", fn: this.addCodeBlock },
-                                                { type: "section", tooltip: "Subtitle", fn: this.addSection },
-                                                // { type: "embed"  , tooltip: "Embed"      , fn: this.addEmbed }
-                                            ].map(y => (
-                                                <span
-                                                    className={cx(PageBP.Styles.button(this.state.dark, !this.state.dark), css`
+                                        <div style={{ padding: "7px 0px" }}>
+                                            {
+                                                [
+                                                    { type: "text", tooltip: "Paragraph", fn: this.addTextBlock },
+                                                    { type: "katex", tooltip: "KaTeX Block", fn: this.addKatexBlock },
+                                                    { type: "img", tooltip: "Image", fn: this.addImageBlock },
+                                                    { type: "code", tooltip: "Code Block", fn: this.addCodeBlock },
+                                                    { type: "section", tooltip: "Subtitle", fn: this.addSection },
+                                                    // { type: "embed"  , tooltip: "Embed"      , fn: this.addEmbed }
+                                                ].map(y => (
+                                                    <span
+                                                        className={cx(PageBP.Styles.button(this.state.dark, !this.state.dark), css`
                                                         transition: all .25s;
                                                         padding: 5px;
                                                         font-size: 10pt;
@@ -788,12 +789,21 @@ export default class Editor extends PageBP<Props, State> {
                                                             cursor: pointer;
                                                         }
                                                     `)}
-                                                    onClick={() => { y.fn(x.id); }}
-                                                >
-                                                    &nbsp;{y.tooltip}&nbsp;
-                                                </span>
-                                            )).map(x => [x, <>&nbsp;&nbsp;</>])
-                                        }
+                                                        onClick={() => { y.fn(x.id); }}
+                                                    >
+                                                        &nbsp;{y.tooltip}&nbsp;
+                                                    </span>
+                                                )).map(x => [x, <>&nbsp;&nbsp;</>])
+                                            }
+                                        </div>
+                                        <div
+                                            style={{
+                                                height: "100%",
+                                                width: 5,
+                                                background: this.state.dark ? "#999" : "rgb(146, 146, 146)",
+                                                marginRight: 35
+                                            }}
+                                        />
                                     </div>
                                 ),
                                 (() => {
@@ -896,7 +906,7 @@ export default class Editor extends PageBP<Props, State> {
                             dark={this.state.dark}
                             localStorage={this.localStorage!}
                         />
-                        <br />
+                        <div style={{ height: 20 }} />
                         <div style={{ position: "sticky", top: 25 }}>
                             <fieldset
                                 style={{
@@ -954,13 +964,13 @@ export default class Editor extends PageBP<Props, State> {
                                 {
                                     this.state.didEdit ? (
                                         <Button
-                                            variant="outline-danger"
+                                            variant="danger"
                                             style={{ width: "100%", display: "block", borderRadius: ".35rem", borderWidth: "3px", marginTop: 10, transition: "background 0s" }}
-                                            className={cx(css`background: ${this.state.dark ? "#161616" : "white"};`)}
+                                            // className={cx(css`background: ${this.state.dark ? "#161616" : "white"};`)}
                                             onClick={() => this.applyChanges()}
                                             disabled={this.state.saving}
                                         >
-                                            {this.state.saving ? (<PulseLoader size={8} color="var(--danger)" />) : (
+                                            {this.state.saving ? (<PulseLoader size={8} color="white" />) : (
                                                 <>
                                                     <Save size={17} style={{ position: "relative", bottom: 2 }} />
                                                     &nbsp;
@@ -971,7 +981,7 @@ export default class Editor extends PageBP<Props, State> {
                                     ) : null
                                 }
                             </fieldset>
-                            <br />
+                            <div style={{ height: 20 }} />
                             {this.state.guide.blocks.length !== 0 && addBlockPanel("Append a Block")}
                             <Footnote dark={this.state.dark} />
                         </div>
@@ -981,8 +991,8 @@ export default class Editor extends PageBP<Props, State> {
                             style={{ fontFamily: "Jost" }}
                             className={cx(css`
                                 .modal-content{
-                                    border: 5px solid ${this.state.dark ? "#343434" : "#dcdcdc"};
-                                    borderRadius: 0.35rem;
+                                    border: 3px solid ${this.state.dark ? "#343434" : "#dcdcdc"};
+                                    border-radius: 0.55rem;
                                 }
                             `)}
                             centered
@@ -992,6 +1002,7 @@ export default class Editor extends PageBP<Props, State> {
                                 className={cx(this.state.dark && css`
                                     background: #161616;
                                     color: whitesmoke;
+                                    border-radius: .35rem;
                                 `)}
                             >
                                 {

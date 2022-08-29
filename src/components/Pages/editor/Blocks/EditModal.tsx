@@ -49,16 +49,16 @@ export default class EditModal extends React.Component<Props, State> {
                 `)}
                 size="lg"
             >
-                <Modal.Header style={{ padding: 25 }}>
+                <Modal.Header style={{ padding: "15px 10px 10px 10px" }}>
                     <Modal.Title style={{ fontSize: "1.9rem", lineHeight: "60px", color: (this.props.dark ? "whitesmoke" : "grey") }}>
                         &nbsp;&nbsp;&nbsp;<span style={{ fontWeight: "bold", color: (this.props.dark ? "#999" : "black") }}>Edit |</span> {this.props.header}
                     </Modal.Title>
                     <Modal.Title style={{ float: "right" }}>
-                        <Button variant="outline-danger" style={{ width: 55, height: 55, borderWidth: 3 }} onClick={this.props.discardEditModal}>
+                        <Button variant="outline-danger" style={{ width: 55, height: 55, borderWidth: 3, borderRadius: ".45rem" }} onClick={this.props.discardEditModal}>
                             <Cross size={30} style={{ position: "relative", right: 2 }} />
                         </Button>
                         &nbsp;&nbsp;
-                        <Button variant="outline-success" style={{ width: 55, height: 55, borderWidth: 3 }} onClick={this.props.closeEditModal}>
+                        <Button variant="outline-success" style={{ width: 55, height: 55, borderWidth: 3, borderRadius: ".45rem" }} onClick={this.props.closeEditModal}>
                             <Check size={30} style={{ position: "relative", right: 2, top: 1 }} />
                         </Button>
                         &nbsp;&nbsp;&nbsp;

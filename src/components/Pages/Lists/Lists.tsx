@@ -20,15 +20,17 @@ import EditModal from "../editor/Blocks/EditModal";
 import PageBP from "../../common/PageBP/PageBP";
 import { Footnote } from "../../common/footnote";
 
+type Collection = {
+    list: CommonType.List,
+    guides: CommonType.Guide[] | Promise<CommonType.Guide[]>
+}
+
 type Props = {};
 type State = {
     user: CognitoUser | null,
-    collections: CommonType.List[]
+    collections: Collection[],
     dark: boolean,
-    activeList: {
-        list: CommonType.List,
-        guides: CommonType.Guide[] | null
-    } | null,
+    activeList: Collection | null,
     hasLoaded: boolean,
     lastSearch: string | undefined,
     searchResults: ({
@@ -43,11 +45,12 @@ type State = {
         togglingVisibility?: boolean
     },
     deleting?: boolean,
-    showDeleteModal?: boolean,
+    showDeleteModal?: () => void,
     likesIsActive: boolean,
     likedGuides: CommonType.Guide[] | null,
     copied: boolean,
-    loading: boolean
+    loading: boolean,
+    listToDelete: string | null
 };
 
 const Styles = {
@@ -108,17 +111,19 @@ export default class Lists extends PageBP<Props, State> {
             likesIsActive: false,
             likedGuides: null,
             copied: false,
-            loading: false
+            loading: false,
+            listToDelete: null
         };
-
-        this.init();
-        // this.setLikesActive();
 
         this.searchForGuide = this.searchForGuide.bind(this);
         this.toggleActiveSearchResult = this.toggleActiveSearchResult.bind(this);
     }
 
-    componentDidMount = () => { this.setLikesActive(); }
+    componentDidMount = () => {
+        this.init();
+        this.getLikedGuides();
+        this.setLikesActive();
+    }
 
     refreshLists = () => {
         fetch(config.endpoints.getLists, {
@@ -130,7 +135,7 @@ export default class Lists extends PageBP<Props, State> {
                 collections: data.collections.sort((x: CommonType.List, y: CommonType.List) =>
                     (new Date(x.timestamp)).getTime()
                     - (new Date(y.timestamp)).getTime()
-                ),
+                ).map((x: CommonType.List) => ({ list: x, guides: this.getGuides(x.id) })),
                 hasLoaded: true
             }));
     }
@@ -158,7 +163,7 @@ export default class Lists extends PageBP<Props, State> {
             });
     }
 
-    init = () => this.refreshLists();
+    init = this.refreshLists;
 
     createCollection = async () => {
         await this.setState({ hasLoaded: false });
@@ -175,24 +180,24 @@ export default class Lists extends PageBP<Props, State> {
         this.refreshLists();
     }
 
-    setActiveList = async (l: CommonType.List) => {
-        await this.setState({
-            activeList: { list: l, guides: null },
-            likesIsActive: false
-        });
-        await fetch(config.endpoints.getList(l.id))
+    getGuides = async (id: string): Promise<CommonType.Guide[]> => {
+        return fetch(config.endpoints.getList(id))
             .then(res => res.json())
-            .then(data => {
-                this.setState({
-                    activeList: data,
-                    searchResults: [],
-                    actionState: {
-                        isSearching: false,
-                        showGuideSearch: false,
-                        showEditModal: false
-                    }
-                });
-            });
+            .then(data => data.guides);
+    }
+
+    setActiveList = async (l: Collection) => {
+        await this.setState({
+            activeList: { list: l.list, guides: await l.guides },
+            likesIsActive: false,
+            searchResults: [],
+            actionState: {
+                isSearching: false,
+                showGuideSearch: false,
+                showEditModal: false
+            },
+            lastSearch: undefined
+        });
     }
 
     setLikesActive = async () => {
@@ -206,9 +211,15 @@ export default class Lists extends PageBP<Props, State> {
                 showEditModal: false
             }
         });
-        await fetch("https://hzhfyqxdsdr5srgkjhlajpxm7u0zwhfb.lambda-url.eu-west-1.on.aws/", {
+
+    }
+
+    getLikedGuides = () => {
+        return fetch(config.endpoints.getLikes, {
             method: "POST",
-            body: JSON.stringify({ username: this.state.user?.getUsername() })
+            body: JSON.stringify({
+                username: this.state.user?.getUsername()
+            })
         })
             .then(res => res.json())
             .then(data => this.setState({
@@ -227,7 +238,8 @@ export default class Lists extends PageBP<Props, State> {
         const client = new typesense.SearchClient(config.typesense_search_options);
         const res = await client.collections("guides").documents().search({
             "q": search_term,
-            "query_by": "header"
+            "query_by": "header",
+            "filter_by": "isprivate:=PF"
         }, {});
         if (res.hits) {
             const actionState = this.state.actionState;
@@ -237,7 +249,7 @@ export default class Lists extends PageBP<Props, State> {
                 searchResults: res.hits.map(x => x.document as CommonType.Guide)
                     .map((x: CommonType.Guide) => ({
                         g: x,
-                        active: (activeList && activeList.filter(y => y.id === x.id).length > 0)
+                        active: (activeList && (activeList as CommonType.Guide[]).filter(y => y.id === x.id).length > 0)
                             ? ToggleState.ON : ToggleState.OFF
                     })),
                 actionState: actionState
@@ -277,10 +289,10 @@ export default class Lists extends PageBP<Props, State> {
             };
 
             if (ts !== ToggleState.LOADING && !!activeList?.guides) {
-                if (ts === ToggleState.ON) activeList.guides?.push(g);
+                if (ts === ToggleState.ON) (activeList.guides as CommonType.Guide[]).push(g);
                 else {
-                    const index = activeList.guides.findIndex(x => x.id === g.id);
-                    if (index !== -1) activeList.guides?.splice(index, 1);
+                    const index = (activeList.guides as CommonType.Guide[]).findIndex(x => x.id === g.id);
+                    if (index !== -1) (activeList.guides as CommonType.Guide[]).splice(index, 1);
                 }
                 stateUpdate.activeList = activeList;
             }
@@ -324,7 +336,29 @@ export default class Lists extends PageBP<Props, State> {
         elem.click();
     }
 
-    deleteActiveList = async () => {
+    deleteList = async (id: string) => {
+        this.setState({
+            showDeleteModal: async () => {
+                await this.setState({
+                    activeList: this.state.activeList && id === this.state.activeList?.list.id ? null : this.state.activeList,
+                    collections: this.state.collections.filter(x => x.list.id !== id),
+                    deleting: false
+                });
+                await fetch(config.endpoints.deleteList(id), {
+                    method: "DELETE"
+                });
+            }
+        });
+        /*this.setState({
+            showDeleteModal: false,
+            deleting: false,
+            
+            listToDelete: id
+        });*/
+        // this.refreshLists();
+    }
+
+    /*deleteActiveList = async () => {
         if (!this.state.activeList) return;
         await this.setState({ hasLoaded: false });
         await fetch(config.endpoints.deleteList(this.state.activeList.list.id), {
@@ -336,7 +370,7 @@ export default class Lists extends PageBP<Props, State> {
             deleting: false
         });
         this.refreshLists();
-    }
+    }*/
 
     editActiveList = async () => {
         if (!this.state.activeList) return;
@@ -351,8 +385,8 @@ export default class Lists extends PageBP<Props, State> {
         activeList.list.description = newDesc;
 
         const lists = this.state.collections;
-        const index = lists.findIndex(x => x.id === activeList.list.id);
-        if (index !== -1) lists[index] = activeList.list;
+        const index = lists.findIndex(x => x.list.id === activeList.list.id);
+        if (index !== -1) lists[index].list = activeList.list;
 
         fetch("https://iv6csj22wy5kzbrrcmpljvkdqy0sthwb.lambda-url.eu-west-1.on.aws/", {
             method: "POST",
@@ -410,8 +444,8 @@ export default class Lists extends PageBP<Props, State> {
                                             width: "100%", padding: 30, fontFamily: "Jost",
                                             resize: "none", borderRadius: ".35rem", margin: 0,
                                             border: "1px solid",
-                                            borderColor: this.state.dark ? "#444" : "#dcdcdc",
-                                            background: this.state.dark ? "#1A1A1B" : "white",
+                                            borderColor: this.state.dark ? "#343434" : "#dcdcdc",
+                                            background: this.state.dark ? "#161616" : "white",
                                             color: this.state.dark ? "whitesmoke" : "#333"
                                         }}
 
@@ -426,7 +460,7 @@ export default class Lists extends PageBP<Props, State> {
                                         }
                                     />
                                 </Form.Group>
-
+                                <br />
                                 <Form.Group>
                                     <Form.Label
                                         style={{
@@ -439,8 +473,8 @@ export default class Lists extends PageBP<Props, State> {
                                         style={{
                                             resize: "none", height: 150, padding: "10px 14px",
                                             border: "1px solid",
-                                            borderColor: this.state.dark ? "#444" : "#dcdcdc",
-                                            background: this.state.dark ? "#1A1A1B" : "white",
+                                            borderColor: this.state.dark ? "#343434" : "#dcdcdc",
+                                            background: this.state.dark ? "#161616" : "white",
                                             color: this.state.dark ? "whitesmoke" : "#333"
                                         }}
                                         placeholder="Give your List a Description!"
@@ -463,7 +497,7 @@ export default class Lists extends PageBP<Props, State> {
                         </LocationCard>
                     </Col>
                 </Row>
-                <br />
+                <div style={{ height: 10 }} />
                 <Row>
                     <Col md={4} style={{ padding: 15 }}>
                         <div style={{ position: "sticky", top: 25 }}>
@@ -473,10 +507,10 @@ export default class Lists extends PageBP<Props, State> {
                                     color: this.state.dark ? "whitesmoke" : "#333",
                                     padding: "10px 17px",
                                     border: "1px solid",
-                                    borderColor: this.state.dark ? "#444" : "#dcdcdc",
+                                    borderColor: this.state.dark ? "#343434" : "#dcdcdc",
                                     borderRadius: ".35rem",
                                     marginBottom: 10,
-                                    background: this.state.dark ? "#1A1A1B" : "white",
+                                    background: this.state.dark ? "#161616" : "white",
                                     fontWeight: "bold",
                                     fontSize: "16pt"
                                 }}
@@ -498,23 +532,32 @@ export default class Lists extends PageBP<Props, State> {
                                         color: this.state.dark ? "whitesmoke" : "#333",
                                         padding: "9px 11px",
                                         border: "1px solid",
-                                        borderRadius: ".35rem",
+                                        borderRadius: ".55rem",
                                         marginBottom: 5
                                     }}
                                     className={cx(this.state.dark ? css`
-                                        background: ${this.state.likesIsActive ? "var(--danger)" : "inherit"};
-                                        border-color: black !important;
+                                        background: ${this.state.likesIsActive ? "rgb(244 63 94/.25)" : "inherit"};
+                                        & > svg {
+                                            fill: ${this.state.likesIsActive ? "#fe96af" : "var(--danger)"} !important;
+                                            stroke: ${this.state.likesIsActive ? "#fe96af" : "var(--danger)"} !important;
+                                        }
+                                        border-color: ${this.state.likesIsActive ? "rgb(244 63 94/.25)" : "black"} !important;
                                     ` : css`
-                                        background: ${this.state.likesIsActive ? "var(--danger)" : "inherit"};
-                                        border-color: rgb(246, 248, 250) !important;
+                                        background: ${this.state.likesIsActive ? "rgba(254, 150, 175, .3)" : "inherit"};
+                                        color: ${this.state.likesIsActive ? "#be123c" : "inherit"} !important;
+                                        & > svg {
+                                            fill: ${this.state.likesIsActive ? "#be123c" : "var(--danger)"} !important;
+                                            stroke: ${this.state.likesIsActive ? "#be123c" : "var(--danger)"} !important;
+                                        }
+                                        border-color: ${this.state.likesIsActive ? "rgba(254, 150, 175, .3)" : "rgb(246, 248, 250)"} !important;
                                     `, css`
-                                        ${this.state.likesIsActive && "color: white !important;"}
+                                        /*${this.state.likesIsActive && "color: white !important;"}*/
                                         .side-highlight {
                                             /* transition: all .2s; */
                                         }
                                         &:hover {
                                             cursor: pointer;
-                                            border-color: ${this.state.dark ? "#444" : "#dcdcdc"} !important;
+                                            border-color: ${this.state.dark ? "#343434" : "#dcdcdc"} !important;
                                             .side-highlight {
                                                 width: 5px;
                                             }
@@ -546,58 +589,91 @@ export default class Lists extends PageBP<Props, State> {
                                 </div>
                                 {
                                     this.state.collections.map((x, i) => {
-                                        const isActive = this.state.activeList && this.state.activeList.list.id === x.id;
+                                        const isActive = this.state.activeList && this.state.activeList.list.id === x.list.id;
                                         return (
                                             <div
-                                                key={x.id}
+                                                key={x.list.id}
                                                 style={{
                                                     fontFamily: "Jost",
                                                     color: this.state.dark ? "whitesmoke" : "#333",
-                                                    padding: "9px 11px",
+                                                    padding: "9px 3px 9px 11px",
                                                     border: "1px solid",
-                                                    borderRadius: ".35rem",
+                                                    borderRadius: ".55rem",
                                                     marginBottom: 5
                                                 }}
-                                                className={cx(this.state.dark ? css`
-                                                    background: ${isActive ? "var(--primary)" : "inherit"};
-                                                    border-color: black !important;
+                                                className={cx(isActive ? css`
+                                                    background: ${this.state.dark ? "rgba(56,139,253,0.15)" : "#b8daff"};
+                                                    border-color: ${this.state.dark ? "rgba(56,139,253,0.15)" : "rgb(37 99 235/.15)"} !important;
+                                                    color: ${this.state.dark ? "whitesmoke" : "#004085"} !important;
+                                                    & > svg {
+                                                        fill: ${this.state.dark ? "var(--primary)" : "rgb(37 99 235)"};
+                                                        stroke: ${this.state.dark ? "var(--primary)" : "rgb(37 99 235)"};
+                                                    }
+                                                    & > span {
+                                                        background: ${this.state.dark ? "var(--primary)" : "rgb(37 99 235)"};
+                                                        color: white;
+                                                    }
                                                 ` : css`
-                                                    background: ${isActive ? "var(--primary)" : "inherit"};
-                                                    ${isActive && "color: whitesmoke !important;"}
-                                                    border-color: rgb(246, 248, 250) !important;
+                                                    border-color: ${this.state.dark ? "black" : "transparent"} !important;
                                                 `, css`
                                                     &:hover {
                                                         cursor: pointer;
-                                                        border-color: ${this.state.dark ? "#444" : "#dcdcdc"} !important;
+                                                        border-color: ${this.state.dark ? "#343434" : "#dcdcdc"} !important;
                                                     }
                                                 `)}
                                                 onClick={() => this.setActiveList(x)}
                                             >
                                                 <Folder
                                                     size={15}
-                                                    fill={this.state.activeList && this.state.activeList.list.id === x.id ? "white" : "#54aeff"}
-                                                    color={this.state.activeList && this.state.activeList.list.id === x.id ? "white" : "#54aeff"}
+                                                    fill={this.state.activeList && this.state.activeList.list.id === x.list.id ? "white" : "#54aeff"}
+                                                    color={this.state.activeList && this.state.activeList.list.id === x.list.id ? "white" : "#54aeff"}
                                                     style={{ position: "relative", bottom: 1.5 }}
                                                 />
                                                 &nbsp;&nbsp;
-                                                {x.header}
+                                                {x.list.header}
+                                                <span
+                                                    style={{
+                                                        float: "right",
+                                                        borderRadius: ".35rem",
+                                                        // background: this.state.dark ? "#161616" : "white",
+                                                        position: "relative",
+                                                        height: 36, width: 36,
+                                                        bottom: 6,
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center"
+                                                    }}
+                                                    /*className={cx(Styles.nav_icon, this.state.dark ? Styles.nav_icon_dark : Styles.nav_icon_light)}*/
+                                                    className={PageBP.Styles.button(this.state.dark)}
+                                                    onClick={() => this.deleteList(x.list.id)}
+                                                >
+                                                    <Trash2
+                                                        size={16}
+                                                    // color="#666"
+                                                    // style={{ position: "relative", bottom: 1.5 }}
+                                                    />
+                                                </span>
                                             </div>
                                         )
                                     })
                                 }
                             </div>
-                            <hr style={{ borderColor: this.state.dark ? "#444" : "#dcdcdc", marginTop: 0 }} />
-                            <div
+                            <hr style={{ borderColor: this.state.dark ? "#343434" : "#dcdcdc", marginTop: 0 }} />
+                            <Button
+                                variant="light"
                                 style={{
                                     fontFamily: "Jost",
-                                    color: this.state.dark ? "whitesmoke" : "#333",
-                                    padding: "10px 12px",
-                                    border: "2px solid",
+                                    // color: this.state.dark ? "whitesmoke" : "#333",
+                                    // background: this.state.dark ? "#1A1A1B" : "white",
+                                    // padding: "10px 12px",
+                                    // border: "2px solid",
+                                    padding: 8,
                                     borderRadius: ".35rem",
-                                    marginBottom: 5
+                                    marginBottom: 5,
+                                    width: "100%"
                                 }}
-                                className={cx(this.state.dark ? css`
-                                    border-color: #444 !important;
+                                /*className={cx(this.state.dark ? css`
+                                    border-color: #343434 !important;
                                 ` : css`
                                     border-color: #dcdcdc !important;
                                 `, css`
@@ -608,7 +684,8 @@ export default class Lists extends PageBP<Props, State> {
                                         border-color: ${this.state.dark ? "#555" : "#dcdcdc"} !important;
                                         background: ${this.state.dark ? "#333" : "whitesmoke"} !important;
                                     }
-                                `)}
+                                `)}*/
+                                className={PageBP.Styles.button(this.state.dark, true)}
                                 onClick={this.createCollection}
                             >
                                 {
@@ -627,13 +704,13 @@ export default class Lists extends PageBP<Props, State> {
                                         </div>
                                     )
                                 }
-                            </div>
+                            </Button>
                             <ListGroup style={{ fontFamily: "Jost" }} hidden>
                                 <ListGroup.Item
                                     style={{
-                                        background: this.state.dark ? "#1A1A1B" : "whitesmoke",
+                                        background: this.state.dark ? "#161616" : "whitesmoke",
                                         color: this.state.dark ? "whitesmoke" : "#333",
-                                        border: this.state.dark ? "1px solid #444" : "1px solid #dcdcdc",
+                                        border: this.state.dark ? "1px solid #343434" : "1px solid #dcdcdc",
                                         padding: "12px 8px 0px 18px"
                                     }}
                                 >
@@ -655,13 +732,13 @@ export default class Lists extends PageBP<Props, State> {
                                                         borderRadius: ".35rem", border: "3px solid",
                                                         position: "relative", bottom: 6,
                                                         fontWeight: "bold", color: this.state.dark ? "whitesmoke" : "#333",
-                                                        borderColor: this.state.dark ? "#444" : "#dcdcdc"
+                                                        borderColor: this.state.dark ? "#343434" : "#dcdcdc"
                                                     }}
                                                     className={cx(css`
-                                                        background: ${this.state.dark ? "#1A1A1B" : "white"};
+                                                        background: ${this.state.dark ? "#161616" : "white"};
                                                     `, this.state.dark && css`
                                                         &:hover {
-                                                            background: #444 !important;
+                                                            background: #343434 !important;
                                                         }
                                                     `)}
                                                     onClick={this.createCollection}
@@ -677,7 +754,7 @@ export default class Lists extends PageBP<Props, State> {
                                         maxHeight: "calc(100vh - 106px)",
                                         borderBottom: "1px solid",
                                         overflowY: "auto",
-                                        borderColor: this.state.dark ? "#444" : "#dcdcdc",
+                                        borderColor: this.state.dark ? "#343434" : "#dcdcdc",
                                         borderRadius: "0px 0px .35rem .35rem"
                                     }}
                                 >
@@ -685,7 +762,7 @@ export default class Lists extends PageBP<Props, State> {
                                         className={cx(this.state.dark ? css`
                                             background: ${this.state.likesIsActive ? "#333" : "black"};
                                             color: whitesmoke;
-                                            border: 1px solid #444;
+                                            border: 1px solid #343434;
                                             &:hover {
                                                 cursor: pointer;
                                                 background: #333;
@@ -715,15 +792,15 @@ export default class Lists extends PageBP<Props, State> {
                                         this.state.collections.map((x, i) => (
                                             <ListGroup.Item
                                                 className={cx(this.state.dark ? css`
-                                                    background: ${this.state.activeList && this.state.activeList.list.id === x.id ? "#333" : "black"};
+                                                    background: ${this.state.activeList && this.state.activeList.list.id === x.list.id ? "#333" : "black"};
                                                     color: whitesmoke;
-                                                    border: 1px solid #444;
+                                                    border: 1px solid #343434;
                                                     &:hover {
                                                         cursor: pointer;
                                                         background: #333;
                                                     }
                                                 ` : css`
-                                                    background: ${this.state.activeList && this.state.activeList.list.id === x.id ? "whitesmoke" : "white"};
+                                                    background: ${this.state.activeList && this.state.activeList.list.id === x.list.id ? "whitesmoke" : "white"};
                                                     color: #333;
                                                     border: 1px solid #dcdcdc;
                                                     &:hover {
@@ -741,12 +818,12 @@ export default class Lists extends PageBP<Props, State> {
                                                 */}
                                                 <Folder
                                                     size={15}
-                                                    fill={this.state.activeList && this.state.activeList.list.id === x.id ? "#54aeff" : "#999"}
-                                                    color={this.state.activeList && this.state.activeList.list.id === x.id ? "#54aeff" : "#999"}
+                                                    fill={this.state.activeList && this.state.activeList.list.id === x.list.id ? "#54aeff" : "#999"}
+                                                    color={this.state.activeList && this.state.activeList.list.id === x.list.id ? "#54aeff" : "#999"}
                                                     style={{ position: "relative", bottom: 1.5 }}
                                                 />
                                                 &nbsp;&nbsp;
-                                                {x.header}
+                                                {x.list.header}
                                             </ListGroup.Item>
                                         ))
                                     }
@@ -762,7 +839,7 @@ export default class Lists extends PageBP<Props, State> {
                                                     background: black;
                                                     color: whitesmoke;
                                                     padding: 10px 20px;
-                                                    border: 1px solid #444;
+                                                    border: 1px solid #343434;
                                                 ` : css`
                                                     background: white;
                                                     color: #333;
@@ -779,12 +856,12 @@ export default class Lists extends PageBP<Props, State> {
                             <Footnote dark={this.state.dark} />
                         </div>
                         <Modal
-                            show={this.state.showDeleteModal}
+                            show={!!this.state.showDeleteModal}
                             size="sm"
                             style={{ fontFamily: "Jost" }}
                             className={cx(css`
                                 .modal-content{
-                                    border: 5px solid ${this.state.dark ? "#444" : "#dcdcdc"};
+                                    border: 5px solid ${this.state.dark ? "#343434" : "#dcdcdc"};
                                     borderRadius: 0.35rem;
                                 }
                             `)}
@@ -793,7 +870,7 @@ export default class Lists extends PageBP<Props, State> {
                             <Modal.Body
                                 style={{ fontSize: "16pt" }}
                                 className={cx(this.state.dark && css`
-                                    background: #1A1A1B;
+                                    background: #161616;
                                     color: whitesmoke;
                                 `)}
                             >
@@ -811,14 +888,17 @@ export default class Lists extends PageBP<Props, State> {
                                                 <Button
                                                     variant="outline-secondary"
                                                     style={{ borderWidth: 3, borderRadius: ".35rem", width: "calc(50% - 2.5px)", marginRight: 5 }}
-                                                    onClick={() => { this.setState({ showDeleteModal: false }); }}
+                                                    onClick={() => { this.setState({ showDeleteModal: () => { } }); }}
                                                 >
                                                     Keep
                                                 </Button>
                                                 <Button
                                                     variant="outline-danger"
                                                     style={{ borderWidth: 3, borderRadius: ".35rem", width: "calc(50% - 2.5px)" }}
-                                                    onClick={() => { this.setState({ deleting: true }); this.deleteActiveList(); }}
+                                                    onClick={this.state.activeList !== null ? (() => {
+                                                        this.setState({ deleting: true, showDeleteModal: undefined });
+                                                        this.state.showDeleteModal!();
+                                                    }) : () => { }}
                                                 >
                                                     Delete
                                                 </Button>
@@ -835,7 +915,7 @@ export default class Lists extends PageBP<Props, State> {
                                 <div
                                     className={cx("text-center list-group-item-primary",
                                         (this.state.dark && css`
-                                            background: #444;
+                                            background: #343434;
                                             color: whitesmoke;
                                         `)
                                     )}
@@ -853,15 +933,15 @@ export default class Lists extends PageBP<Props, State> {
                                     <ListGroup style={{ fontFamily: "Jost" }}>
                                         <ListGroup.Item
                                             style={{
-                                                background: this.state.dark ? "#1A1A1B" : "white",
+                                                background: this.state.dark ? "#161616" : "white",
                                                 color: this.state.dark ? "whitesmoke" : "#333",
                                                 border: "1px solid",
-                                                borderColor: this.state.dark ? "#444" : "#dcdcdc",
+                                                borderColor: this.state.dark ? "#343434" : "#dcdcdc",
                                                 padding: "20px 20px 25px 20px", borderRadius: ".35rem"
                                             }}
                                             className={cx(css`
                                                 hr {
-                                                    border-color: ${this.state.dark ? "#444" : "#dcdcdc"};
+                                                    border-color: ${this.state.dark ? "#343434" : "#dcdcdc"};
                                                 }
                                             `)}
                                         >
@@ -880,7 +960,7 @@ export default class Lists extends PageBP<Props, State> {
                                                     <div
                                                         className={cx("text-center list-group-item-secondary",
                                                             (this.state.dark && css`
-                                                                background: #444;
+                                                                background: #343434;
                                                                 color: whitesmoke;
                                                             `)
                                                         )}
@@ -901,221 +981,239 @@ export default class Lists extends PageBP<Props, State> {
                                 <ListGroup style={{ fontFamily: "Jost" }}>
                                     <ListGroup.Item
                                         style={{
-                                            background: this.state.dark ? "#1A1A1B" : "white",
+                                            background: this.state.dark ? "#161616" : "white",
                                             color: this.state.dark ? "whitesmoke" : "#333",
                                             border: "1px solid",
-                                            borderColor: this.state.dark ? "#444" : "#dcdcdc",
-                                            padding: 20, borderRadius: ".35rem"
+                                            borderColor: this.state.dark ? "#343434" : "#dcdcdc",
+                                            borderRadius: ".35rem", padding: 0
                                         }}
                                         className={cx(css`
                                             hr {
-                                                border-color: ${this.state.dark ? "#444" : "#dcdcdc"};
+                                                border-color: ${this.state.dark ? "#343434" : "#dcdcdc"};
                                             }
                                         `)}
                                     >
-                                        <h3 style={{ margin: 5, marginBottom: 0, fontWeight: "bold" }}>
-                                            <Folder size={26} color="#54aeff" fill="#54aeff" style={{ position: "relative", bottom: 2 }} />
-                                            &nbsp;&nbsp;
-                                            {this.state.activeList && this.state.activeList.list.header}
-                                        </h3>
-                                        {
-                                            this.state.activeList.list.description && (
-                                                <>
-                                                    <br />
-                                                    <p style={{ color: this.state.dark ? "whitesmoke" : "#333", paddingLeft: 10 }}>
-                                                        {this.state.activeList.list.description}
-                                                    </p>
-                                                </>
-                                            )
-                                        }
-                                        <hr />
-                                        <span
-                                            className={cx(Styles.nav_icon, this.state.dark ? Styles.nav_icon_dark : Styles.nav_icon_light)}
-                                            onClick={this.toggleGuideSearch}
-                                        >
-                                            &nbsp;
-                                            <Plus />
-                                            &nbsp;
-                                            Add Guides
-                                            &nbsp;
-                                        </span>
-                                        &nbsp;
-                                        <span
-                                            className={cx(Styles.nav_icon, this.state.dark ? Styles.nav_icon_dark : Styles.nav_icon_light)}
-                                            onClick={() => {
-                                                const actionState = this.state.actionState;
-                                                actionState.showEditModal = true;
-                                                this.setState({ actionState: actionState });
+                                        <div style={{ padding: 20 }}>
+                                            <h3 style={{ margin: 5, marginBottom: 0, fontWeight: "bold" }}>
+                                                <Folder size={26} color="#54aeff" fill="#54aeff" style={{ position: "relative", bottom: 2 }} />
+                                                &nbsp;&nbsp;
+                                                {this.state.activeList && this.state.activeList.list.header}
+                                            </h3>
+                                            {
+                                                this.state.activeList.list.description && (
+                                                    <>
+                                                        <p
+                                                            style={{
+                                                                color: this.state.dark ? "whitesmoke" : "#333",
+                                                                paddingLeft: 5, margin: "10px 0px 0px 0px",
+                                                                fontSize: "11pt", lineHeight: 1.4
+                                                            }}
+                                                        >
+                                                            {this.state.activeList.list.description}
+                                                        </p>
+                                                    </>
+                                                )
+                                            }
+                                        </div>
+                                        <div
+                                            style={{
+                                                borderTop: "1px solid", padding: "10px 15px 6px 15px",
+                                                borderColor: this.state.dark ? "#343434" : "#dcdcdc",
+                                                background: this.state.dark ? "black" : "whitesmoke",
+                                                borderRadius: "0px 0px .35rem .35rem"
                                             }}
                                         >
-                                            &nbsp;&nbsp;
-                                            <Edit3 size={18} />
-                                            &nbsp;&nbsp;
-                                            Edit
-                                            &nbsp;
-                                        </span>
-                                        &nbsp;
-                                        <span
-                                            className={cx(Styles.nav_icon, this.state.dark ? Styles.nav_icon_dark : Styles.nav_icon_light)}
-                                            onClick={() => this.setState({ showDeleteModal: true })}
-                                        >
-                                            &nbsp;&nbsp;
-                                            <Trash2 size={18} />
-                                            &nbsp;&nbsp;
-                                            Delete
-                                            &nbsp;
-                                        </span>
-                                        &nbsp;
-                                        <OverlayTrigger
-                                            placement="bottom"
-                                            overlay={(
-                                                <Tooltip id="list-visibility-toggle-tooltip">
-                                                    {
-                                                        this.state.actionState.togglingVisibility ? "Loading..." :
-                                                            `Click to make ${this.state.activeList.list.isPrivate ? "Public" : "Private"}`
-                                                    }
-                                                </Tooltip>
-                                            )}
-                                        >
                                             <span
                                                 className={cx(Styles.nav_icon, this.state.dark ? Styles.nav_icon_dark : Styles.nav_icon_light)}
-                                                onClick={this.togglePrivate}
-                                                style={{ width: 40 }}
+                                                onClick={this.toggleGuideSearch}
                                             >
                                                 &nbsp;
-                                                {
-                                                    this.state.actionState.togglingVisibility ? <BounceLoader size="18" color={this.state.dark ? "whitesmoke" : "#333"} /> :
-                                                        this.state.activeList.list.isPrivate === true ? <EyeOff size={18} /> : <Eye size={18} />
-                                                }
+                                                <Plus />
+                                                &nbsp;
+                                                Add Guides
                                                 &nbsp;
                                             </span>
-                                        </OverlayTrigger>
-                                        &nbsp;
-                                        <OverlayTrigger
-                                            placement="bottom"
-                                            overlay={(
-                                                <Tooltip id="panel-link-tooltip">
-                                                    {
-                                                        !this.state.copied ? "Copy Share Link" :
-                                                            <span style={{ fontWeight: "bold" }}>Copied!</span>
-                                                    }
-                                                </Tooltip>
-                                            )}
-                                        >
+                                            &nbsp;
                                             <span
                                                 className={cx(Styles.nav_icon, this.state.dark ? Styles.nav_icon_dark : Styles.nav_icon_light)}
-                                                onClick={this.copyGuideLink}
-                                                style={{ width: 40 }}
+                                                onClick={() => {
+                                                    const actionState = this.state.actionState;
+                                                    actionState.showEditModal = true;
+                                                    this.setState({ actionState: actionState });
+                                                }}
                                             >
-                                                &nbsp;
-                                                <LinkIcon size={18} />
+                                                &nbsp;&nbsp;
+                                                <Edit3 size={18} />
+                                                &nbsp;&nbsp;
+                                                Edit
                                                 &nbsp;
                                             </span>
-                                        </OverlayTrigger>
-                                        {
-                                            this.state.actionState.showGuideSearch && (
-                                                <>
-                                                    <hr />
-                                                    <div style={{ margin: 10 }}>
-                                                        <h6 style={{ fontWeight: "bold" }}>Let's find a guide for your List (Click to Add)</h6>
-                                                        <Form onSubmit={this.searchForGuide}>
-                                                            <Form.Control
-                                                                placeholder="Search for a Guide"
-                                                                id="search-field"
-                                                                className={cx(this.state.dark && css`
+                                            &nbsp;
+                                            <span
+                                                className={cx(Styles.nav_icon, this.state.dark ? Styles.nav_icon_dark : Styles.nav_icon_light)}
+                                                onClick={() => this.deleteList(this.state.activeList!.list.id)}
+                                            >
+                                                &nbsp;&nbsp;
+                                                <Trash2 size={18} />
+                                                &nbsp;&nbsp;
+                                                Delete
+                                                &nbsp;
+                                            </span>
+                                            &nbsp;
+                                            <OverlayTrigger
+                                                placement="bottom"
+                                                overlay={(
+                                                    <Tooltip id="list-visibility-toggle-tooltip">
+                                                        {
+                                                            this.state.actionState.togglingVisibility ? "Loading..." :
+                                                                `Click to make ${this.state.activeList.list.isPrivate ? "Public" : "Private"}`
+                                                        }
+                                                    </Tooltip>
+                                                )}
+                                            >
+                                                <span
+                                                    className={cx(Styles.nav_icon, this.state.dark ? Styles.nav_icon_dark : Styles.nav_icon_light)}
+                                                    onClick={this.togglePrivate}
+                                                    style={{ width: 40 }}
+                                                >
+                                                    &nbsp;
+                                                    {
+                                                        this.state.actionState.togglingVisibility ? <BounceLoader size="18" color={this.state.dark ? "whitesmoke" : "#333"} /> :
+                                                            this.state.activeList.list.isPrivate === true ? <EyeOff size={18} /> : <Eye size={18} />
+                                                    }
+                                                    &nbsp;
+                                                </span>
+                                            </OverlayTrigger>
+                                            &nbsp;
+                                            <OverlayTrigger
+                                                placement="bottom"
+                                                overlay={(
+                                                    <Tooltip id="panel-link-tooltip">
+                                                        {
+                                                            !this.state.copied ? "Copy Share Link" :
+                                                                <span style={{ fontWeight: "bold" }}>Copied!</span>
+                                                        }
+                                                    </Tooltip>
+                                                )}
+                                            >
+                                                <span
+                                                    className={cx(Styles.nav_icon, this.state.dark ? Styles.nav_icon_dark : Styles.nav_icon_light)}
+                                                    onClick={this.copyGuideLink}
+                                                    style={{ width: 40 }}
+                                                >
+                                                    &nbsp;
+                                                    <LinkIcon size={18} />
+                                                    &nbsp;
+                                                </span>
+                                            </OverlayTrigger>
+                                            {
+                                                this.state.actionState.showGuideSearch && (
+                                                    <>
+                                                        <hr />
+                                                        <div style={{ margin: 10 }}>
+                                                            <h6 style={{ fontWeight: "bold" }}>Let's find a guide for your List (Click to Add)</h6>
+                                                            <Form onSubmit={this.searchForGuide}>
+                                                                <Form.Control
+                                                                    placeholder="Search for a Guide"
+                                                                    id="search-field"
+                                                                    className={cx(this.state.dark && css`
                                                                     &, &:active, &:focus {
                                                                         background: rgba(255, 255, 255, 0.2);
-                                                                        border-color: #444;
+                                                                        border-color: #343434;
                                                                         color: whitesmoke;
                                                                     }
                                                                 `)}
-                                                            />
-                                                        </Form>
-                                                        {
-                                                            this.state.actionState.isSearching ? (
-                                                                <>
-                                                                    <br /><br />
-                                                                    <div style={{ height: 50, width: 50, margin: "auto" }}>
-                                                                        <BounceLoader size={50} color={this.state.dark ? "whitesmoke" : "#666"} />
-                                                                    </div>
-                                                                    <br />
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    {!!this.state.searchResults.length && <br />}
-                                                                    {!this.state.searchResults.length && this.state.lastSearch && (
-                                                                        <>
-                                                                            <br />
-                                                                            <div
-                                                                                className={cx("text-center list-group-item-danger",
-                                                                                    (this.state.dark && css`
-                                                                                        background: #444;
+                                                                />
+                                                            </Form>
+                                                            {
+                                                                this.state.actionState.isSearching ? (
+                                                                    <>
+                                                                        <br /><br />
+                                                                        <div style={{ height: 50, width: 50, margin: "auto" }}>
+                                                                            <BounceLoader size={50} color={this.state.dark ? "whitesmoke" : "#666"} />
+                                                                        </div>
+                                                                        <br />
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        {!!this.state.searchResults.length && <br />}
+                                                                        {!this.state.searchResults.length && this.state.lastSearch && (
+                                                                            <>
+                                                                                <br />
+                                                                                <div
+                                                                                    className={cx("text-center list-group-item-danger",
+                                                                                        (this.state.dark && css`
+                                                                                        background: #343434;
                                                                                         color: whitesmoke;
                                                                                     `)
-                                                                                )}
-                                                                                style={{ borderRadius: ".35rem", padding: 20, fontFamily: "Jost" }}
-                                                                            >
-                                                                                <span style={{ fontSize: "1rem" }}>No results found for...</span>
-                                                                                <br />
-                                                                                <div style={{ fontWeight: "bold", fontSize: "1.4rem", wordBreak: "break-all", marginTop: 10 }}>
-                                                                                    {this.state.lastSearch}
+                                                                                    )}
+                                                                                    style={{ borderRadius: ".35rem", padding: 20, fontFamily: "Jost" }}
+                                                                                >
+                                                                                    <span style={{ fontSize: "1rem" }}>No results found for...</span>
+                                                                                    <br />
+                                                                                    <div style={{ fontWeight: "bold", fontSize: "1.4rem", wordBreak: "break-all", marginTop: 10 }}>
+                                                                                        {this.state.lastSearch}
+                                                                                    </div>
                                                                                 </div>
-                                                                            </div>
-                                                                        </>
-                                                                    )
-                                                                    }
-                                                                    {
-                                                                        this.state.searchResults.map(x =>
-                                                                            <GuideToggle
-                                                                                guide={x.g}
-                                                                                dark={this.state.dark}
-                                                                                state={x.active}
-                                                                                list={this.state.activeList?.list!}
-                                                                                toggle={this.toggleActiveSearchResult}
-                                                                            />
+                                                                            </>
                                                                         )
-                                                                    }
-                                                                </>
-                                                            )
-                                                        }
-                                                    </div>
-                                                </>
-                                            )
-                                        }
+                                                                        }
+                                                                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                                                                            {
+                                                                                this.state.searchResults.map(x =>
+                                                                                    <GuideToggle
+                                                                                        guide={x.g}
+                                                                                        dark={this.state.dark}
+                                                                                        state={x.active}
+                                                                                        list={this.state.activeList?.list!}
+                                                                                        toggle={this.toggleActiveSearchResult}
+                                                                                    />
+                                                                                )
+                                                                            }
+                                                                        </div>
+                                                                    </>
+                                                                )
+                                                            }
+                                                        </div>
+                                                    </>
+                                                )
+                                            }
+                                        </div>
                                     </ListGroup.Item>
                                 </ListGroup>
                             )
                         }
                         <br />
                         {
-                            this.state.activeList?.guides === null ? (
-                                <TimelineCardSkeleton dark={this.state.dark} />
-                            ) : (
-                                this.state.activeList?.guides.length === 0 ? (
-                                    <>
-                                        <div
-                                            className={cx("text-center list-group-item-secondary",
-                                                (this.state.dark && css`
-                                                    background: #444;
+                            this.state.activeList && (
+                                this.state.activeList?.guides === null ? (
+                                    <TimelineCardSkeleton dark={this.state.dark} />
+                                ) : (
+                                    (this.state.activeList?.guides as CommonType.Guide[]).length === 0 ? (
+                                        <>
+                                            <div
+                                                className={cx("text-center list-group-item-secondary",
+                                                    (this.state.dark && css`
+                                                    background: #343434;
                                                     color: whitesmoke;
                                                 `)
-                                            )}
-                                            style={{ borderRadius: ".35rem", padding: 40, fontFamily: "Jost" }}
-                                        >
-                                            { /* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                                            This list is empty! <a href="#" style={{ color: this.state.dark ? "whitesmoke" : "#333", textDecoration: "underline" }} onClick={this.newGuideInActiveList}>Create a guide here.</a>
-                                        </div>
-                                        <br />
-                                    </>
-                                ) : this.state.activeList?.guides.map(
-                                    g => <TimelineCard guide={g} dark={this.state.dark} />
-                                )
-                            )
+                                                )}
+                                                style={{ borderRadius: ".35rem", padding: 40, fontFamily: "Jost" }}
+                                            >
+                                                { /* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                                                This list is empty! <a href="#" style={{ color: this.state.dark ? "whitesmoke" : "#333", textDecoration: "underline" }} onClick={this.newGuideInActiveList}>Create a guide here.</a>
+                                            </div>
+                                            <br />
+                                        </>
+                                    ) : (this.state.activeList!.guides as CommonType.Guide[]).map(
+                                        g => <TimelineCard guide={g} dark={this.state.dark} />
+                                    )
+                                ))
                         }
                         {
                             this.state.activeList
                             && this.state.activeList.guides
-                            && this.state.activeList.guides.length > 0
+                            && (this.state.activeList.guides as CommonType.Guide[]).length > 0
                             && (
                                 <Button
                                     variant="outline-secondary"
@@ -1129,7 +1227,7 @@ export default class Lists extends PageBP<Props, State> {
                                     }}
                                     className={cx(css`
                                         &, &:hover, &:active {
-                                            border-color: #dcdcdc;
+                                            border-color: ${this.state.dark ? "#343434" : "#dcdcdc"};
                                             background: transparent;
                                             color: var(--secondary);
                                         }
@@ -1159,7 +1257,7 @@ export default class Lists extends PageBP<Props, State> {
                         <br />
                     </Col>
                 </Row>
-            </Template>
+            </Template >
         )
     }
 

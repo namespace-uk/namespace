@@ -29,16 +29,19 @@ export default class Template extends React.Component<Props, State> {
     render() {
         return (
             <div
-                style={{ background: (this.props.dark ? "black" : "#f6f8fa"), minHeight: "100vh" }}
+                style={{
+                    background: (this.props.dark ? "black" : "#f6f8fa"),
+                    minHeight: "100vh"
+                }}
                 className={cx(css`
                     & {
-                        --fg-dark: #1A1A1B;
+                        --fg-dark: #161616;
                         --fg-light: white;
                     
                         --bg-dark: black;
                         --bg-light: #f6f8fa;    
                     
-                        --border-dark: #444;
+                        --border-dark: #343434;
                         --border-light: #dcdcdc;
                     
                         --color-dark: whitesmoke;

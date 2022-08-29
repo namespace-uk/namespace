@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 
 const GlobalStyles = {
-    CENTER: css `
+    CENTER: css`
         position: absolute;
         left: 50%;
         transform: translate(-50%, 0);
@@ -90,7 +90,7 @@ const GlobalStyles = {
         z-index: 2;
         background: white;
         padding: 12px;
-    `, 
+    `,
     SKELETON_FRAME_OBJECT: css`
         border-radius: .7rem;
         background: #f6f7f8;

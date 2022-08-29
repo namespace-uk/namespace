@@ -22,11 +22,9 @@ type Props = {
 
 const Styles = {
     positional_s: css`
-        border: 4px solid;
-        border-radius: .35rem;
+        border: 3px solid;
+        border-radius: .55rem;
         width: 100%:
-        border-right-width: 3px;
-        border-left-width: 3px;
         &, .list-group-item {
             font-family: Jost;
         }
@@ -40,7 +38,7 @@ const Styles = {
     dark_s: css`
         &, .list-group-item {
             background: black;
-            border-color: #444;
+            border-color: #343434;
             color: #DDD;
         }
         .top-guide-link > .list-group-item:hover {
@@ -68,10 +66,14 @@ export default class UserListWidget extends React.Component<Props, {}> {
                 className={cx(Styles.positional_s, (this.props.dark ? Styles.dark_s : Styles.light_s))}
             >
                 <ListGroupItem
-                    style={{ padding: "38px 20px", fontSize: "1.25rem", fontWeight: "bold", borderTop: 0, borderBottomWidth: 2, background: this.props.dark ? "#1A1A1B" : "whitesmoke" }}
-                    className={cx(css`
-                        ${!this.props.dark && "background: whitesmoke !important;"}
-                    `)}
+                    style={{
+                        padding: "38px 20px",
+                        fontSize: "1.25rem",
+                        fontWeight: "bold",
+                        border: "none",
+                        borderRadius: ".45rem",
+                        background: this.props.dark ? "#161616" : "white"
+                    }}
                 >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <BounceLoader size={50} color={this.props.dark ? "whitesmoke" : "#666"} />
@@ -85,15 +87,17 @@ export default class UserListWidget extends React.Component<Props, {}> {
                 style={{
                     fontFamily: "Jost",
                     border: "3px solid",
-                    borderColor: this.props.dark ? "#444" : "#dcdcdc",
-                    borderRadius: ".4rem"
+                    borderColor: this.props.dark ? "#343434" : "#dcdcdc",
+                    borderRadius: ".55rem"
                 }}
             >
                 <ListGroup.Item
                     style={{
-                        background: this.props.dark ? "#1A1A1B" : "whitesmoke",
+                        background: this.props.dark ? "#161616" : "whitesmoke",
                         color: this.props.dark ? "whitesmoke" : "#333",
-                        border: this.props.dark ? "1px solid #444" : "1px solid #dcdcdc"
+                        border: "1px solid", borderRadius: ".4rem .4rem 0px 0px",
+                        borderWidth: 0, borderBottomWidth: 2.4,
+                        borderColor: this.props.dark ? "#343434" : "#dcdcdc"
                     }}
                     className={cx(css`
                         border-bottom-width: 2px !important;
@@ -112,7 +116,7 @@ export default class UserListWidget extends React.Component<Props, {}> {
                                     className={cx(this.props.dark ? css`
                                         background: black;
                                         color: whitesmoke;
-                                        border: 1px solid #444;
+                                        border: 1px solid #343434;
                                         &:hover {
                                             cursor: pointer;
                                             background: #333;
@@ -121,6 +125,14 @@ export default class UserListWidget extends React.Component<Props, {}> {
                                         background: white;
                                         color: #333;
                                         border: 1px solid #dcdcdc;
+                                        &:hover {
+                                            cursor: pointer;
+                                            background: whitesmoke;
+                                        }
+                                    `, css`
+                                        ${i === this.props.lists.length - 1 ? "border-radius: 0px 0px .4rem .4rem !important;border-bottom: 0px;" : "border-radius: 0px !important;"}
+                                        border-left-width: 0px;
+                                        border-right-width: 0px;
                                         &:hover {
                                             cursor: pointer;
                                             background: whitesmoke;
@@ -141,13 +153,20 @@ export default class UserListWidget extends React.Component<Props, {}> {
                                 className={cx(this.props.dark ? css`
                                     background: black;
                                     color: whitesmoke;
-                                    border: 1px solid #444;
+                                    border: 0px solid #343434;
                                 ` : css`
                                     background: white;
                                     color: #333;
-                                    border: 1px solid #dcdcdc;
+                                    border: 0px solid #dcdcdc;
                                 `)}
-                                style={{ padding: "10px 20px", borderTopRightRadius: 0, borderTopLeftRadius: 0, textAlign: "center" }}
+                                style={{
+                                    padding: "10px 20px",
+                                    borderRadius: ".35rem",
+                                    borderTopRightRadius: 0,
+                                    borderTopLeftRadius: 0,
+                                    textAlign: "center",
+                                    borderTopWidth: 1
+                                }}
                             >
                                 No public lists
                             </ListGroup.Item>

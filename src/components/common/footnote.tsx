@@ -32,6 +32,7 @@ export const Footnote: React.FC<{ dark?: boolean }> = props => (
                 className={CStyles.flat_link}
                 href="https://github.com/namespace-uk/namespace"
                 style={{ color: "inherit", textDecoration: "underline" }}
+                target="_blank" rel="noreferrer"
             >GitHub</a>
         </div>
         <div key="copyright" style={{ whiteSpace: "nowrap", fontSize: ".8rem" }}>

@@ -59,7 +59,7 @@ export default class SectionDivider extends React.Component<Props, State> {
                         width: "100%",
                         fontFamily: "Jost",
                         fontWeight: "bold",
-                        fontSize: 35,
+                        fontSize: 25,
                         textAlign: "center",
                         border: this.props.dark ? "3px solid #343434" : "3px solid #c4c4c4",
                         background: this.props.dark ? "#161616" : "white",
@@ -67,8 +67,14 @@ export default class SectionDivider extends React.Component<Props, State> {
                         borderRadius: ".35rem"
                     }}
                 >
-                    <div style={{ padding: 20, background: this.props.dark ? "inherit" : "rgba(220, 220, 220, 0.6)" }}>
-                        <Hash size={25} color="grey" />
+                    <div
+                        style={{
+                            padding: 16,
+                            background: this.props.dark ? "inherit" : "rgba(220, 220, 220, 0.6)",
+                            borderRadius: ".2rem .2rem 0 0"
+                        }}
+                    >
+                        <Hash size={20} color="grey" />
                         {(this.props.data as { header: string }).header}
                     </div>
                     <BlockPanel

@@ -17,6 +17,7 @@ const config = {
         "getLikes": path("/profile/likes"),
         "getGuide": (id: string) => path(`/guide/${id}`),
         "deleteGuide": (id: string) => path(`/guide/${id}`),
+        "likeGuide": path("/guide/like"),
         "getAllGuides": path("/guide/all"),
         "createList": `${api_root}/list/create`,
         "getList": (id: string) => path(`/list/${id}`),
@@ -25,7 +26,8 @@ const config = {
         "getLists": path("/list/user"),
         "updateGuide": path("/guide/update"),
         "uploadImage": path("/image/upload"),
-        "imageBucket": (id: string) => path(`/image/${id}`)
+        "imageBucket": (id: string) => path(`/image/${id}`),
+        "getSpaces": "https://z5ermsmvlysvfwh2vg7xtyvaom0mqfdr.lambda-url.eu-west-1.on.aws/"
     },
     "api_root": api_root,
     "cognito_pool_data": {

@@ -49,14 +49,16 @@ export default class Bookmarks extends PageBP<Props, State> {
             }
         };
 
-        this.init();
+        //         this.init();
     }
 
-    init = async () => {
-        if (!this.state.user) return;
-        const username = this.state.user.getUsername();
+    init() {
+        console.log("Initializing");
+        const user = this.userHandler.getUser();
+        if (!user) return;
+        const username = user.getUsername();
 
-        await fetch(config.endpoints.getBookmarks, {
+        fetch(config.endpoints.getBookmarks, {
             method: "POST",
             body: JSON.stringify({
                 username: username
@@ -111,7 +113,7 @@ export default class Bookmarks extends PageBP<Props, State> {
                                 <div
                                     className={cx("text-center list-group-item-primary",
                                         (this.state.dark && css`
-                                            background: #444;
+                                            background: #343434;
                                             color: whitesmoke;
                                         `)
                                     )}
@@ -125,13 +127,13 @@ export default class Bookmarks extends PageBP<Props, State> {
                     </Col>
                     <Col md={4} sm={0} className={cx(CommonStyles.small_col_s)}>
                         <ProfileCard user={this.state.user} dark={this.state.dark} localStorage={this.localStorage!} hasLoaded />
-                        <br />
+                        <div style={{ height: 15 }} />
                         {
                             (this.state.hasLoaded && this.state.guides.length > 0) && (
                                 <div
                                     className={cx("text-center list-group-item-primary",
                                         (this.state.dark && css`
-                                            background: #444;
+                                            background: #343434;
                                             color: whitesmoke;
                                         `)
                                     )}

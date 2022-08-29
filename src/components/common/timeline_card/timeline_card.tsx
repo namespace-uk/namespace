@@ -243,7 +243,45 @@ const TimelineCard: React.FC<{
                                 >{props.guide.header}</h3>
                             )
                         }
-                        <h6 style={{ color: "gray", margin: 0 }}>{(new Date(props.guide.timestamp)).toDateString()}</h6>
+                        <h6 style={{ color: "gray", margin: 0 }}>
+                            <span style={{ marginRight: 10 }}>
+                                {(new Date(props.guide.timestamp)).toDateString()}
+                            </span>
+                            <span
+                                className={cx(!props.dark ? css`
+                                    background: rgba(56,139,253,0.15);
+                                    color: #0969da !important;
+                                    border-radius: 20px;
+                                    font-family: Jost, sans-serif;
+                                    border: 0px solid rgba(56,139,253,0.15);
+                                    &:hover{ 
+                                        cursor: pointer; 
+                                        background: var(--primary);
+                                        color: white !important;
+                                    }
+                                    white-space: nowrap;
+                                ` : css`
+                                    background: rgba(56,139,253,0.25);
+                                    color: #58a6ff !important;
+                                    border-radius: 20px;
+                                    font-family: Jost, sans-serif;
+                                    border: 0px solid rgba(56,139,253,0.15);
+                                    &:hover{ 
+                                        cursor: pointer; 
+                                        background: var(--primary);
+                                        color: white !important; 
+                                    }
+                                    white-space: nowrap;
+                                `)}
+                                style={{
+                                    color: "black",
+                                    padding: "2px 10px",
+                                    fontSize: "10pt"
+                                }}
+                            >
+                                cs141
+                            </span>
+                        </h6>
                         {
                             props.guide.description && (
                                 <>

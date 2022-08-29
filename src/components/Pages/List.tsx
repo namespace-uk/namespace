@@ -35,11 +35,10 @@ export default class List extends PageBP<Props, State> {
             hasLoaded: false
         };
 
-        this.init();
     }
 
-    async init() {
-        await fetch(config.endpoints.getList(this.props.match.params.id))
+    init() {
+        fetch(config.endpoints.getList(this.props.match.params.id))
             .then(res => res.json())
             .then(data => this.setState({
                 list: data.list,
@@ -69,7 +68,7 @@ export default class List extends PageBP<Props, State> {
                                     <div
                                         className={cx("text-center list-group-item-secondary",
                                             (this.state.dark && css`
-                                            background: #444;
+                                            background: #343434;
                                             color: whitesmoke;
                                         `)
                                         )}
@@ -87,10 +86,10 @@ export default class List extends PageBP<Props, State> {
                                     <div>
                                         <ListGroup.Item
                                             style={{
-                                                background: this.state.dark ? "#1A1A1B" : "white",
+                                                background: this.state.dark ? "#161616" : "white",
                                                 color: this.state.dark ? "whitesmoke" : "#333",
                                                 border: "1px solid", textAlign: "center",
-                                                borderColor: this.state.dark ? "#444" : "#dcdcdc",
+                                                borderColor: this.state.dark ? "#343434" : "#dcdcdc",
                                                 padding: 8, borderRadius: ".35rem"
                                             }}
                                             className={cx(this.state.dark && css`
@@ -112,15 +111,15 @@ export default class List extends PageBP<Props, State> {
                                 this.state.list && (
                                     <ListGroup.Item
                                         style={{
-                                            background: this.state.dark ? "#1A1A1B" : "white",
+                                            background: this.state.dark ? "#161616" : "white",
                                             color: this.state.dark ? "whitesmoke" : "#333",
                                             border: "1px solid", textAlign: "center",
-                                            borderColor: this.state.dark ? "#444" : "#dcdcdc",
+                                            borderColor: this.state.dark ? "#343434" : "#dcdcdc",
                                             padding: "20px 20px 25px 20px", borderRadius: ".35rem"
                                         }}
                                         className={cx(css`
                                             hr {
-                                                border-color: ${this.state.dark ? "#444" : "#dcdcdc"};
+                                                border-color: ${this.state.dark ? "#343434" : "#dcdcdc"};
                                             }
                                         `)}
                                     >
@@ -140,7 +139,7 @@ export default class List extends PageBP<Props, State> {
                                             )
                                         }
                                         {/*
-                                        <hr style={{ borderColor: this.state.dark ? "#444" : "#dcdcdc" }}/>
+                                        <hr style={{ borderColor: this.state.dark ? "#343434" : "#dcdcdc" }}/>
                                         <div style={{ height: 20, fontFamily: "Jost" }}>
                                             <Link to={`/user/${this.state.list.user}`} className={cx(CStyles.flat_link)}>
                                                 <span 
@@ -150,7 +149,7 @@ export default class List extends PageBP<Props, State> {
                                                         border-radius: .35rem; 
                                                         color: white;
                                                         &:hover {
-                                                            background: #444;
+                                                            background: #343434;
                                                             cursor: pointer;
                                                         }
                                                     ` : css`

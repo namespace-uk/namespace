@@ -25,8 +25,8 @@ type State = {
 
 const Styles = {
     positional_s: css`
-        border: 4px solid;
-        border-radius: .35rem;
+        border: 3px solid;
+        border-radius: .55rem;
         width: 100%:
         border-right-width: 3px;
         border-left-width: 3px;
@@ -43,7 +43,7 @@ const Styles = {
     dark_s: css`
         &, .list-group-item {
             background: black;
-            border-color: #444;
+            border-color: #343434;
             color: #DDD;
         }
         .top-guide-link > .list-group-item:hover {
@@ -69,8 +69,8 @@ export default class TopGuidesWidget extends React.Component<Props, State> {
         this.init();
     }
 
-    init = async () => {
-        await fetch(config.endpoints.getTopGuides)
+    init = () => {
+        fetch(config.endpoints.getTopGuides)
             .then(res => {
                 if (res.status !== 200) return Promise.reject(res);
                 return res.json();
@@ -86,7 +86,14 @@ export default class TopGuidesWidget extends React.Component<Props, State> {
                 className={cx(Styles.positional_s, (this.props.dark ? Styles.dark_s : Styles.light_s))}
             >
                 <ListGroupItem
-                    style={{ padding: "38px 20px", fontSize: "1.25rem", fontWeight: "bold", borderTop: 0, borderBottomWidth: 2, background: this.props.dark ? "#1A1A1B" : "white" }}
+                    style={{
+                        padding: "38px 20px",
+                        fontSize: "1.25rem",
+                        fontWeight: "bold",
+                        border: 0,
+                        borderRadius: ".4rem",
+                        background: this.props.dark ? "#161616" : "white"
+                    }}
                 >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <BounceLoader size={50} color={this.props.dark ? "whitesmoke" : "#666"} />
@@ -98,9 +105,18 @@ export default class TopGuidesWidget extends React.Component<Props, State> {
         return (
             <ListGroup
                 className={cx(Styles.positional_s, (this.props.dark ? Styles.dark_s : Styles.light_s))}
+                style={{
+                    background: this.props.dark ? "#343434" : "#dcdcdc"
+                }}
             >
                 <ListGroupItem
-                    style={{ padding: "18px 20px", fontSize: "1.25rem", fontWeight: "bold", borderTop: 0, borderBottomWidth: 2, background: this.props.dark ? "#1A1A1B" : "whitesmoke" }}
+                    style={{
+                        padding: "18px 20px", fontSize: "1.25rem",
+                        fontWeight: "bold", borderTop: 0,
+                        borderRadius: ".4rem .4rem 0px 0px",
+                        borderWidth: 0, borderBottomWidth: 2.4,
+                        background: this.props.dark ? "#161616" : "whitesmoke"
+                    }}
                     className={cx(css`
                         ${!this.props.dark && "background: whitesmoke !important;"}
                     `)}
@@ -112,7 +128,9 @@ export default class TopGuidesWidget extends React.Component<Props, State> {
                     this.state.guides.map((x, i) => (
                         <Link to={`/gr/${x.id}`} className={cx(CStyles.flat_link, "top-guide-link")}>
                             <ListGroupItem className={cx(css`
-                                ${i === 4 ? "border-top-right-radius: 0px !important;border-top-left-radius: 0px !important;border-bottom: 0px;" : "border-radius: 0px !important;"}
+                                ${i === this.state.guides.length - 1 ? "border-radius: 0px 0px .4rem .4rem !important;border-bottom: 0px;" : "border-radius: 0px !important;"}
+                                border-left-width: 0px;
+                                border-right-width: 0px;
                                 &:hover {
                                     cursor: pointer;
                                     background: whitesmoke;

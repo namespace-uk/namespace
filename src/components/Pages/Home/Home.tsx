@@ -80,8 +80,6 @@ export default class Home extends PageBP<Props, State> {
             lists: null,
             listHandler: null
         };
-
-        this.init();
     }
 
     init() {
@@ -146,7 +144,7 @@ export default class Home extends PageBP<Props, State> {
                             position: relative;
                             bottom: 2px;
                             &:hover { 
-                                background: ${this.state.dark ? "#444" : "whitesmoke"};
+                                background: ${this.state.dark ? "#343434" : "whitesmoke"};
                                 cursor: pointer;
                             }
                         `)}
@@ -231,7 +229,7 @@ export default class Home extends PageBP<Props, State> {
                             localStorage={this.localStorage!}
                             principalOwnsProfile
                         />
-                        <br />
+                        <div style={{ height: 15 }} />
                         <TopGuidesWidget dark={this.state.dark} />
                         <Footnote dark={this.state.dark} />
                     </Col>

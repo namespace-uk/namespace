@@ -23,16 +23,20 @@ import { Footnote } from "../../common/footnote";
 
 
 const Styles = {
-    positional_s: css`
-        border: 4px solid;
-        border-radius: .35rem;
+    positional_s: (pos?: string) => cx(css`
+        border: 3px solid;
         width: 100%:
         border-right-width: 3px;
         border-left-width: 3px;
         &, .list-group-item {
             font-family: Jost;
         }
-    `,
+    `, pos === "bottom" && css`
+        border-radius: 0px 0px .55rem .55rem;
+        border-top: 0px;
+    `, !pos && css`
+        border-radius: .55rem;
+    `),
     light_s: css`
         &, .list-group-item {
             background: white;
@@ -42,7 +46,7 @@ const Styles = {
     dark_s: css`
         &, .list-group-item {
             background: black;
-            border-color: #444;
+            border-color: #343434;
             color: #DDD;
         }
         .top-guide-link > .list-group-item:hover {
@@ -71,6 +75,7 @@ enum ActiveState {
 
 type State = BPState & {
     guide: CommonType.Guide | null,
+    contents?: CommonType.Block[],
     id: string,
     showBlocks: ({
         type: string,
@@ -134,19 +139,30 @@ export default class Guide extends PageBP<Props, State> {
             return res.json();
         })
             .then(guide => {
-                console.log(guide);
                 if (!guide.id) this.setState({ redirectToHome: true });
                 else {
+                    const contents = guide.blocks.filter((x: any) => x.type === "section");
                     this.setState({
                         hasLoaded: true, guide: guide,
+                        contents: contents.length > 0 ? contents : undefined,
                         showBlocks: this.toShowBlocks(guide.blocks)
                     });
+                    // Fetch full profile for "More from __" widget
+                    this.getFullProfile(guide.user);
                 }
             });
 
+        // Fetch lists belonging to the logged-in user
         if (this.state.user) {
-            this.getFullProfile(this.state.user.getUsername());
             this.getLists(this.state.user.getUsername());
+            fetch(config.endpoints.getProfile, {
+                method: "POST",
+                body: JSON.stringify({ username: this.state.user.getUsername() })
+            }).then(res => res.json())
+                .then(data => {
+                    data = data.body;
+                    this.setState({ profile: data.user });
+                })
         }
     }
 
@@ -157,11 +173,8 @@ export default class Guide extends PageBP<Props, State> {
         }).then(res => res.json())
             .then(data => {
                 data = data.body;
-                this.setState({
-                    profile: data.user,
-                    authorGuides: data.guides.filter((x: CommonType.Guide) => !x.isPrivate)
-                });
-                this.localStorage!.setItem("profile", JSON.stringify(data.user));
+                const authorGuides = data.guides.filter((x: CommonType.Guide) => !x.isPrivate);
+                this.setState({ authorGuides: authorGuides });
             });
     }
 
@@ -235,30 +248,37 @@ export default class Guide extends PageBP<Props, State> {
             });
     }
 
-    async likeGuide() {
+    likeGuide = async () => {
         if (this.state.profile == null || this.state.guide == null) return;
         const profile = this.state.profile;
         this.setState({ liking: true });
 
         let liked = true;
 
-        const index = profile.likes.indexOf(this.state.guide.id);
+        const guide = this.state.guide;
+        const index = profile.likes.indexOf(guide.id);
         if (index !== -1) {
             profile.likes.splice(index, 1);
             liked = false;
-        } else profile.likes.push(this.state.guide.id);
+            guide.likes! -= 1;
+        } else {
+            profile.likes.push(this.state.guide.id);
+            guide.likes! += 1;
+        }
 
+        // Update user profile
         await fetch(config.endpoints.updateUserProfile, {
             method: "POST",
             body: JSON.stringify(profile)
         })
             .then(res => res.json())
             .then(data => {
-                this.setState({ profile: profile, liking: false });
+                this.setState({ profile: profile, liking: false, guide: guide });
                 this.localStorage!.setItem("profile", JSON.stringify(data));
             });
 
-        await fetch("https://wmkrbt5v5yvhnaojbtbaej55ru0dacxp.lambda-url.eu-west-1.on.aws/", {
+        // Like Guide
+        await fetch(config.endpoints.likeGuide, {
             method: "POST",
             body: JSON.stringify({
                 id: this.state.guide.id,
@@ -305,6 +325,12 @@ export default class Guide extends PageBP<Props, State> {
     }
 
     render() {
+        let contentsHeightSub = 0;
+        if (this.state.authorGuides && this.state.authorGuides.length > 0) {
+            contentsHeightSub = contentsHeightSub + Math.min(400, 230 + this.state.authorGuides.length * 70);
+        } else contentsHeightSub += 150;
+        if (this.state.user) contentsHeightSub += 70;
+
         if (this.state.guide == null && this.state.redirectToHome) return (
             <Template dark={this.state.dark} user={this.state.user} setDarkMode={this.setDarkMode} localStorage={this.localStorage!}>
                 <Row>
@@ -318,7 +344,7 @@ export default class Guide extends PageBP<Props, State> {
                         <div
                             className={cx("text-center list-group-item-secondary",
                                 (this.state.dark && css`
-                                    background: #444;
+                                    background: #343434;
                                     color: whitesmoke;
                                 `)
                             )}
@@ -333,32 +359,13 @@ export default class Guide extends PageBP<Props, State> {
             </Template>
         );// return (<Redirect to="/" />);
 
-        const panelBtnStyle = css`
-            border-width: 3px;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            min-width: 50px;
-            vertical-align: middle;
-            border-radius: .35rem;
-            padding: 0px !important;
-            &:focus { 
-                cursor: pointer; 
-                text-decoration: none; 
-            }
-            &, &:focus, &:active {
-                outline: none !important;
-                box-shadow: none !important;
-            }
-        `;
         const widthBtnStyle = css`
             padding: 5px;
             border-radius: .35rem;
             position: relative;
             bottom: 2px;
             &:hover { 
-                background: ${this.state.dark ? "#444" : "whitesmoke"};
+                background: ${this.state.dark ? "#343434" : "whitesmoke"};
                 cursor: pointer;
             }
         `;
@@ -382,11 +389,11 @@ export default class Guide extends PageBP<Props, State> {
                         style={{
                             fontFamily: "Jost",
                             padding: "30px 30px 20px 30px",
-                            background: (this.state.dark ? "#1A1A1B" : undefined),
+                            background: (this.state.dark ? "#161616" : undefined),
                             color: (this.state.dark ? "whitesmoke" : "#333"),
                             border: "1px solid",
                             borderRadius: ".35rem",
-                            borderColor: (this.state.dark ? "#444" : "#dcdcdc")
+                            borderColor: (this.state.dark ? "#343434" : "#dcdcdc")
                         }}
                     >
                         <h5 style={{ fontWeight: "bold" }}>
@@ -409,7 +416,7 @@ export default class Guide extends PageBP<Props, State> {
                                 <Button
                                     style={{ border: 0, width: "100%", marginBottom: 10 }}
                                     className={cx(this.state.dark ? css`
-                                        background: #444 !important;
+                                        background: #343434 !important;
                                         color: whitesmoke;
                                         &:hover, &:active, &:focus {
                                             background: #666 !important;
@@ -448,7 +455,7 @@ export default class Guide extends PageBP<Props, State> {
                                 <div
                                     className={cx("text-center list-group-item-primary",
                                         (this.state.dark && css`
-                                        background: #444;
+                                        background: #343434;
                                         color: whitesmoke;
                                     `)
                                     )}
@@ -499,53 +506,64 @@ export default class Guide extends PageBP<Props, State> {
                             (this.state.guide != null) ? (<>
                                 <div
                                     style={{
-                                        background: (this.state.dark ? "#1A1A1B" : "white"),
+                                        background: (this.state.dark ? "#161616" : "white"),
                                         color: (this.state.dark ? "whitesmoke" : "black"),
-                                        border: (this.state.dark ? "3px solid #444" : "3px solid #dcdcdc"),
-                                        borderRadius: ".35rem", padding: 40,
+                                        border: "3px solid",
+                                        borderColor: (this.state.dark ? "#343434" : "#dcdcdc"),
+                                        borderRadius: ".55rem"
                                     }}
                                 >
-                                    <h2 style={{ fontFamily: "Jost, sans-serif", fontWeight: "bold", color: this.state.dark ? "whitesmoke" : "#333" }}>
-                                        {this.state.guide.header}
-                                    </h2>
-                                    <h6 style={{ color: "#666", fontFamily: "Jost" }}>
-                                        {(new Date(this.state.guide.timestamp)).toDateString()}
-                                    </h6>
-                                    {
-                                        this.state.guide.description && (
-                                            <>
-                                                <br />
-                                                <p style={{ margin: 0, wordBreak: "break-word", overflow: "hidden", fontFamily: "Jost" }}>
-                                                    {this.state.guide.description}
-                                                </p>
-                                            </>
-                                        )
-                                    }
-                                    <hr style={{ borderColor: this.state.dark ? "#444" : "#dcdcdc" }} />
-                                    <div style={{ height: 20, fontFamily: "Jost" }}>
+                                    <div style={{ padding: 30, paddingBottom: 10 }}>
+                                        <h3 style={{ fontFamily: "Jost, sans-serif", fontWeight: "bold", color: this.state.dark ? "whitesmoke" : "#333" }}>
+                                            {this.state.guide.header}
+                                        </h3>
+                                        <h6 style={{ color: "#666", fontFamily: "Jost" }}>
+                                            {(new Date(this.state.guide.timestamp)).toDateString()}
+                                        </h6>
+                                        {
+                                            this.state.guide.description && (
+                                                <>
+                                                    <p style={{ wordBreak: "break-word", overflow: "hidden", fontFamily: "Jost" }}>
+                                                        {this.state.guide.description}
+                                                    </p>
+                                                </>
+                                            )
+                                        }
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontFamily: "Jost", padding: "10px 15px", borderTop: "1px solid",
+                                            borderColor: this.state.dark ? "#343434" : "#dcdcdc",
+                                            display: "flex", justifyContent: "space-between"
+                                        }}
+                                    >
                                         <Link to={`/user/${this.state.guide.user}`} className={cx(CStyles.flat_link)}>
                                             <span
-                                                style={{ padding: 10, fontSize: "15pt", fontWeight: "bold" }}
+                                                style={{
+                                                    padding: "6px 15px", fontSize: "14pt",
+                                                    fontWeight: "bold", position: "relative",
+                                                    top: 3, color: this.state.dark ? "whitesmoke" : "#444"
+                                                }}
                                                 className={cx(this.state.dark ? css`
                                                     transition: all .25s;
                                                     border-radius: .35rem; 
                                                     color: white;
                                                     &:hover {
-                                                        background: #444;
+                                                        background: #343434;
                                                         cursor: pointer;
                                                     }
                                                 ` : css`
                                                     transition: all .25s;
                                                     border-radius: .35rem; 
                                                     &:hover {
-                                                        background: whitesmoke;
+                                                        background: #ededed;
                                                         cursor: pointer;
                                                     }
                                                 `)}
                                             >
                                                 <span style={{ position: "relative", bottom: 2 }}>
                                                     <Avatar
-                                                        size={32}
+                                                        size={22}
                                                         name={this.state.guide.user}
                                                         variant="marble"
                                                         colors={["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"]}
@@ -555,22 +573,23 @@ export default class Guide extends PageBP<Props, State> {
                                                 {this.state.guide.user}
                                             </span>
                                         </Link>
-                                        <span style={{ float: "right" }}>
+                                        <span>
                                             {
                                                 (this.state.user?.getUsername() === this.state.guide.user) && (
                                                     <Link to={`/e/${this.state.guide.id}`}>
-                                                        <Button variant="light"
+                                                        <Button variant="light" size="sm"
                                                             style={{
                                                                 borderRadius: ".35rem", border: "3px solid",
-                                                                position: "relative", bottom: 6,
-                                                                fontWeight: "bold", color: this.state.dark ? "whitesmoke" : "#333",
-                                                                borderColor: this.state.dark ? "#444" : "#dcdcdc"
+                                                                paddingBottom: 2,
+                                                                fontWeight: "bold", color: "whitesmoke",
+                                                                borderColor: "#238636", background: "#238636" // this.state.dark ? "#343434" : "#dcdcdc"
                                                             }}
                                                             className={cx(css`
-                                                                background: ${this.state.dark ? "#1A1A1B" : "white"};
-                                                            `, this.state.dark && css`
+                                                                background: ${this.state.dark ? "#161616" : "white"};
+                                                            `, css`
                                                                 &:hover {
-                                                                    background: #444 !important;
+                                                                    background: var(--success) !important;
+                                                                    border-color: var(--success) !important;
                                                                 }
                                                             `)}
                                                         >
@@ -582,64 +601,59 @@ export default class Guide extends PageBP<Props, State> {
                                                 )
                                             }
                                             &nbsp;
-                                            <DropdownOnClick
-                                                popoverId="guide-more-dropdown"
-                                                placement="bottom"
-                                                dark={this.state.dark}
-                                                overlay={
-                                                    <>
-                                                        <MenuBtn onClick={() => this.setState({ showAddToListModal: true })}>
-                                                            <Book size={17} style={{ position: "relative", bottom: 2 }} color="#666" />&nbsp;
-                                                            Add to List
-                                                        </MenuBtn>
-                                                    </>
-                                                }
-                                            >
-                                                <Button variant="light"
-                                                    id="more-btn"
-                                                    style={{
-                                                        borderRadius: ".35rem", border: "3px solid",
-                                                        position: "relative", bottom: 6,
-                                                        fontWeight: "bold", color: this.state.dark ? "whitesmoke" : "#333",
-                                                        borderColor: this.state.dark ? "#444" : "#dcdcdc"
-                                                    }}
-                                                    className={cx(css`
-                                                        background: ${this.state.dark ? "#1A1A1B" : "white"};
-                                                    `, this.state.dark && css`
-                                                        &:hover {
-                                                            background: #444 !important;
+                                            {
+                                                this.state.user && (
+                                                    <DropdownOnClick
+                                                        popoverId="guide-more-dropdown"
+                                                        placement="bottom"
+                                                        dark={this.state.dark}
+                                                        overlay={
+                                                            <>
+                                                                <MenuBtn
+                                                                    onClick={() => this.setState({ showAddToListModal: true })}
+                                                                    dark={this.state.dark}
+                                                                >
+                                                                    <Book size={17} style={{ position: "relative", bottom: 2 }} color="#666" />&nbsp;
+                                                                    Add to List
+                                                                </MenuBtn>
+                                                            </>
                                                         }
-                                                    `)}
-                                                >
-                                                    <MoreHorizontal size={20} style={{ position: "relative", bottom: 2 }} />
-                                                </Button>
-                                            </DropdownOnClick>
+                                                    >
+                                                        <Button size="sm"
+                                                            id="more-btn"
+                                                            style={{ border: "3px solid", padding: "5px 9px", paddingBottom: 4 }}
+                                                            className={PageBP.Styles.button(this.state.dark, true)}
+                                                        >
+                                                            <MoreHorizontal size={20} style={{ position: "relative", bottom: 2 }} />
+                                                        </Button>
+                                                    </DropdownOnClick>
+                                                )
+                                            }
                                         </span>
                                     </div>
                                 </div>
-                                <br />
+                                <div style={{ height: 15 }} />
                                 {this.state.showBlocks && BlockRenderer.render(this.state.showBlocks, this.state.dark, this.state.zen)}
                             </>) : (
                                 <div className={cx(css`
-                                    border: 1px solid ${this.state.dark ? "#444" : "#dcdcdc"};
-                                    background: ${this.state.dark ? "#1A1A1B" : "white"};
+                                    border: 3px solid ${this.state.dark ? "#343434" : "#dcdcdc"};
+                                    background: ${this.state.dark ? "#161616" : "white"};
                                     width: 100%;
-                                    border-radius: .35rem;
-                                    padding: 20px;
+                                    border-radius: .55rem;
                                 `, this.state.dark && css`
                                     .react-loading-skeleton {
                                         background-color: #333;
                                     }
                                 `)}>
-                                    <h1><Skeleton width={380} /></h1>
-                                    <h6><Skeleton width={200} /></h6>
-                                    <br />
-                                    <p><Skeleton count={2} /></p>
-                                    <hr />
-                                    <div style={{ height: 25 }}>
+                                    <div style={{ padding: "30px 30px 10px 30px" }}>
+                                        <h2><Skeleton width={380} /></h2>
+                                        <h6 style={{ marginBottom: 10 }}><Skeleton width={120} /></h6>
+                                        <p><Skeleton count={2} /></p>
+                                    </div>
+                                    <div style={{ padding: "10px 25px 8px 25px", borderTop: "1px solid", borderColor: this.state.dark ? "#343434" : "#dcdcdc" }}>
                                         <span style={{ padding: 3, fontSize: "15pt", fontWeight: "bold" }}>
-                                            <span style={{ position: "relative", bottom: 8 }}>
-                                                <Skeleton style={{ width: 34, height: 34, borderRadius: "50%" }} />
+                                            <span style={{ position: "relative", bottom: 2 }}>
+                                                <Skeleton style={{ width: 24, height: 24, borderRadius: "50%" }} />
                                                 &nbsp;&nbsp;
                                             </span>
                                             <Skeleton width={100} />
@@ -654,7 +668,7 @@ export default class Guide extends PageBP<Props, State> {
                             { /* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                             <a href="#" className={(CStyles.flat_link, "top")}>
                                 <Button
-                                    variant="outline-secondary"
+                                    /*variant="outline-secondary"
                                     style={{
                                         borderWidth: 3,
                                         borderRadius: ".35rem",
@@ -663,8 +677,12 @@ export default class Guide extends PageBP<Props, State> {
                                         fontWeight: "bold"
                                     }}
                                     className={cx(css`
-                                        background: ${this.state.dark ? "#1A1A1B" : "white"};
-                                    `)}
+                                        background: ${this.state.dark ? "#161616" : "white"};
+                                `   )}*/
+                                    style={{
+                                        fontFamily: "Jost"
+                                    }}
+                                    className={PageBP.Styles.button(this.state.dark)}
                                 >
                                     &nbsp;
                                     Back to Top
@@ -691,7 +709,7 @@ export default class Guide extends PageBP<Props, State> {
                             }}
                             className={cx(css`
                                 .btn:not(:hover) {
-                                    border-color: ${this.state.dark ? "#444" : "#dcdcdc"};
+                                    border-color: ${this.state.dark ? "#343434" : "#dcdcdc"};
                                 }
                             `)}
                         >
@@ -699,52 +717,13 @@ export default class Guide extends PageBP<Props, State> {
                                 (this.state.profile && this.state.profile.bookmarks && this.state.guide) && (
                                     <div
                                         style={{
-                                            width: "100%",
-                                            fontFamily: "Jost",
-                                            overflowY: "auto",
-                                            overflow: "hidden",
                                             display: "flex",
-                                            flexFlow: "row wrap",
-                                            marginTop: 25
+                                            justifyContent: "space-between",
+                                            fontFamily: "Jost",
+                                            margin: "15px 5px 0px 5px",
+                                            flexWrap: "wrap"
                                         }}
-                                        className={cx(css`
-                                            button {
-                                                min-height: 50px;
-                                                transition-duration: 0s;
-                                            }
-                                        `)}
                                     >
-                                        <OverlayTrigger
-                                            placement="bottom"
-                                            overlay={
-                                                <Tooltip id="panel-bookmark-tooltip">
-                                                    {
-                                                        this.state.profile.bookmarks.includes(this.state.guide.id) ? "Remove Bookmark" : "Bookmark"
-                                                    }
-                                                </Tooltip>
-                                            }
-                                        >
-                                            <Button
-                                                variant={this.state.profile.bookmarks.includes(this.state.guide.id) ? "primary" : "outline-primary"}
-                                                className={cx(panelBtnStyle, css`
-                                                    ${this.state.profile.bookmarks.includes(this.state.guide.id) ? `
-                                                        svg { fill: white };
-                                                    ` : `background: ${this.state.dark ? "#1A1A1B" : "white"};`}
-                                                    &:hover {
-                                                        svg {
-                                                            fill: white;
-                                                            border-wdth: 0px !important;
-                                                        }
-                                                    }
-                                                `)}
-                                                onClick={this.bookmarkGuide}
-                                                style={{ flexGrow: 1, borderRadius: 0, borderTopLeftRadius: ".35rem", borderBottomLeftRadius: ".35rem" }}
-                                            >
-                                                {
-                                                    this.state.bookmarking ? <BounceLoader size={25} color="white" /> : <Bookmark size={25} />
-                                                }
-                                            </Button>
-                                        </OverlayTrigger>
                                         <OverlayTrigger
                                             placement="bottom"
                                             overlay={
@@ -755,24 +734,91 @@ export default class Guide extends PageBP<Props, State> {
                                                 </Tooltip>
                                             }
                                         >
-                                            <Button
-                                                variant={this.state.profile.likes.includes(this.state.guide.id) ? "danger" : "outline-danger"}
-                                                className={cx(panelBtnStyle, css`
-                                                        ${this.state.profile.likes.includes(this.state.guide.id) ? `
-                                                            svg { fill: white };
-                                                        ` : `background: ${this.state.dark ? "#1A1A1B" : "white"};`}
-                                                        &:hover {
-                                                            svg {
-                                                                fill: white;
-                                                                border-wdth: 0px !important;
-                                                            }
-                                                        }
-                                                    `)}
+                                            <Button variant="light" size="sm"
+                                                style={{
+                                                    borderRadius: ".35rem 0px 0px .35rem", border: "3px solid",
+                                                    paddingBottom: 2, flexGrow: 1, flex: 2,
+                                                    fontWeight: "bold", color: "whitesmoke",
+                                                    minWidth: "fit-content",
+                                                    borderColor: "#e11d48", background: "#e11d48" // this.state.dark ? "#343434" : "#dcdcdc"
+                                                }}
+                                                className={cx(css`
+                                                    background: ${this.state.dark ? "#161616" : "white"};
+                                                `, css`
+                                                    &:hover {
+                                                        background: #f43f5e !important;
+                                                        border-color: #f43f5e !important;
+                                                    }
+                                                `)}
                                                 onClick={this.likeGuide}
-                                                style={{ flexGrow: 1, borderRadius: 0, borderLeft: "none", borderRight: "none" }}
                                             >
                                                 {
-                                                    this.state.liking ? <BounceLoader size={25} color="white" /> : <Heart size={25} />
+                                                    this.state.liking ? (
+                                                        <div style={{ display: "flex", justifyContent: "center" }}>
+                                                            <BounceLoader size={25} color="white" />
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <Heart
+                                                                size={17}
+                                                                style={{
+                                                                    position: "relative", bottom: 2,
+                                                                    fill: this.state.profile.likes.includes(this.state.guide.id) ? "white" : "var(--danger)"
+                                                                }}
+                                                            />
+                                                            &nbsp;&nbsp;
+                                                            {this.state.guide?.likes}
+                                                        </>
+                                                    )
+                                                }
+                                            </Button>
+                                        </OverlayTrigger>
+                                        <OverlayTrigger
+                                            placement="bottom"
+                                            overlay={
+                                                <Tooltip id="panel-bookmark-tooltip">
+                                                    {
+                                                        this.state.profile.bookmarks.includes(this.state.guide.id) ? "Remove Bookmark" : "Bookmark"
+                                                    }
+                                                </Tooltip>
+                                            }
+                                        >
+                                            <Button variant="light" size="sm"
+                                                style={{
+                                                    borderRadius: 0, border: "3px solid",
+                                                    paddingBottom: 2, flexGrow: 1, flex: 3,
+                                                    fontWeight: "bold", color: "whitesmoke",
+                                                    minWidth: "fit-content", padding: 5,
+                                                    borderColor: "#2563eb", background: "#2563eb" // this.state.dark ? "#343434" : "#dcdcdc"
+                                                }}
+                                                className={cx(css`
+                                                    background: ${this.state.dark ? "#161616" : "white"};
+                                                `, css`
+                                                    &:hover {
+                                                        background: #3b82f6 !important;
+                                                        border-color: #3b82f6 !important;
+                                                    }
+                                                `)}
+                                                onClick={this.bookmarkGuide}
+                                            >
+                                                {
+                                                    this.state.bookmarking ? (
+                                                        <div style={{ display: "flex", justifyContent: "center" }}>
+                                                            <BounceLoader size={21} color="white" />
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <Bookmark
+                                                                size={17}
+                                                                style={{
+                                                                    position: "relative", bottom: 2,
+                                                                    fill: this.state.profile.bookmarks.includes(this.state.guide.id) ? "white" : "transparent"
+                                                                }}
+                                                            />
+                                                            &nbsp;
+                                                            Bookmark
+                                                        </>
+                                                    )
                                                 }
                                             </Button>
                                         </OverlayTrigger>
@@ -789,80 +835,117 @@ export default class Guide extends PageBP<Props, State> {
                                             )
                                             }
                                         >
-                                            <Button
-                                                variant={"outline-secondary"}
-                                                className={cx(panelBtnStyle, css`background: ${this.state.dark ? "#1A1A1B" : "white"};`)}
+                                            <Button size="sm"
+                                                // id="more-btn"
+                                                style={{
+                                                    border: "3px solid",
+                                                    padding: "5px 9px",
+                                                    paddingBottom: 4,
+                                                    flexGrow: 1, flex: 2,
+                                                    minWidth: "fit-content",
+                                                    borderRadius: "0px .35rem .35rem 0px",
+                                                    borderLeft: "none"
+                                                }}
+                                                className={PageBP.Styles.button(this.state.dark, true)}
                                                 onClick={this.copyGuideLink}
-                                                style={{ flexGrow: 1, borderRadius: 0, borderTopRightRadius: ".35rem", borderBottomRightRadius: ".35rem" }}
                                             >
-                                                <LinkIcon size={25} />
+                                                <LinkIcon size={17} style={{ position: "relative", bottom: 2 }} />
+                                                &nbsp;
+                                                Link
                                             </Button>
                                         </OverlayTrigger>
                                     </div>
                                 )
                             }
                             {
-                                (this.state.guide !== null) && (() => {
-                                    const sections = this.state.guide.blocks.filter(x => x.type === "section");
-                                    if (sections.length > 0) return (<>
+                                this.state.contents && (
+                                    <>
                                         <div
                                             style={{
                                                 width: "100%",
                                                 border: "3px solid",
-                                                borderRadius: ".35rem",
-                                                background: this.state.dark ? "#1A1A1B" : "white",
-                                                borderColor: this.state.dark ? "#444" : "#dcdcdc",
+                                                borderRadius: this.state.guide &&
+                                                    this.state.authorGuides &&
+                                                    this.state.authorGuides?.length > 0 ? ".55rem .55rem 0 0" : ".55rem",
+                                                background: this.state.dark ? "#161616" : "whitesmoke",
+                                                borderColor: this.state.dark ? "#343434" : "#dcdcdc",
                                                 fontFamily: "Jost",
-                                                padding: 20,
-                                                maxHeight: `calc(100vh - ${this.state.user ? 125 : 50}px)`,
-                                                // height: `calc(100vh - ${this.state.user ? 125 : 50}px)`,
-                                                overflowY: "auto",
-                                                marginTop: 25
+                                                // padding: 20,
+                                                // padding: "18px 20px"
+                                                marginTop: 15
                                             }}
                                         >
-                                            <div style={{ padding: 10 }}>
-                                                <h5 style={{ fontWeight: "bold", color: this.state.dark ? "whitesmoke" : "#333" }}>Contents</h5>
+                                            <div style={{ padding: "18px 20px" }}>
+                                                <h5 style={{ fontWeight: "bold", color: this.state.dark ? "whitesmoke" : "#333", marginBottom: 0 }}>
+                                                    Contents
+                                                </h5>
                                             </div>
-                                            {
-                                                sections.map(x => (
-                                                    <a href={`#sec-${x.id}`} className={cx(CStyles.flat_link, css`
+                                            <div
+                                                style={{
+                                                    padding: 10, borderTop: "2px solid",
+                                                    borderColor: this.state.dark ? "#343434" : "#dcdcdc",
+                                                    background: this.state.dark ? "black" : "white",
+                                                    maxHeight: `calc(100vh - ${contentsHeightSub}px)`,
+                                                    // height: `calc(100vh - ${this.state.user ? 125 : 50}px)`,
+                                                    overflowY: "auto",
+                                                    borderRadius: "0 0 .55rem .55rem"
+                                                }}
+                                            >
+                                                {
+                                                    this.state.contents.map(x => (
+                                                        <a href={`#sec-${x.id}`} className={cx(CStyles.flat_link, css`
                                                         &:hover {
-                                                            background: ${this.state.dark ? "#444" : "whitesmoke"};
+                                                            background: ${this.state.dark ? "#343434" : "whitesmoke"};
                                                             border-radius: .35rem;
                                                         }
                                                     `)} style={{ display: "block", padding: "5px 10px", color: this.state.dark ? "whitesmoke" : "#333" }}>
-                                                        <Hash size={14} color="grey" style={{ position: "relative", marginBottom: 3 }} />
-                                                        &nbsp;&nbsp;
-                                                        {x.data.header}
-                                                    </a>
-                                                ))
-                                            }
+                                                            <Hash size={14} color="grey" style={{ position: "relative", marginBottom: 3 }} />
+                                                            &nbsp;&nbsp;
+                                                            {(x.data as { header: string }).header}
+                                                        </a>
+                                                    ))
+                                                }
+                                            </div>
                                         </div>
-                                        {/* <hr style={{ borderWidth: 3, marginTop: 0 }} color={this.state.dark ? "#444" : "#dcdcdc" }/> */}
+                                        {/* <hr style={{ borderWidth: 3, marginTop: 0 }} color={this.state.dark ? "#343434" : "#dcdcdc" }/> */}
                                     </>)
-                                })()
                             }
                             {
                                 this.state.guide && this.state.authorGuides ? (
                                     this.state.authorGuides.length > 0 && (
                                         <ListGroup
-                                            className={cx(Styles.positional_s, (this.state.dark ? Styles.dark_s : Styles.light_s))}
-                                            style={{ marginTop: 25 }}
+                                            className={cx(
+                                                Styles.positional_s(this.state.contents ? "bottom" : undefined),
+                                                (this.state.dark ? Styles.dark_s : Styles.light_s)
+                                            )}
+                                            style={{ marginTop: this.state.contents ? 0 : 15 }}
                                         >
                                             <ListGroupItem
-                                                style={{ padding: "18px 20px", fontSize: "1.25rem", fontWeight: "bold", borderTop: 0, borderBottomWidth: 2, background: this.state.dark ? "#1A1A1B" : "whitesmoke" }}
+                                                style={{
+                                                    padding: "18px 20px", fontSize: "1.25rem",
+                                                    fontWeight: "bold", borderTop: 0,
+                                                    borderRadius: ".4rem .4rem 0px 0px",
+                                                    borderWidth: 0, borderBottomWidth: 2.4,
+                                                    background: this.state.dark ? "#161616" : "whitesmoke"
+                                                }}
                                                 className={cx(css`
                                                     ${!this.state.dark && "background: whitesmoke !important;"}
                                                 `)}
                                             >
                                                 More from {this.state.guide?.user}
                                             </ListGroupItem>
-                                            <div style={{ maxHeight: "calc(100vh - 135px)", overflow: "auto" }}>
+                                            <div
+                                                style={{
+                                                    maxHeight: `calc(${contentsHeightSub}px - 40px)`,
+                                                    overflow: "auto"
+                                                }}>
                                                 {
                                                     this.state.authorGuides && this.state.authorGuides.map((g, i) => (
                                                         <Link to={`/gr/${g.id}`} className={cx(CStyles.flat_link, "top-guide-link")}>
                                                             <ListGroupItem className={cx(css`
-                                                                ${i === 4 ? "border-top-right-radius: 0px !important;border-top-left-radius: 0px !important;border-bottom: 0px;" : "border-radius: 0px !important;"}
+                                                                ${i === this.state.authorGuides!.length - 1 ? "border-radius: 0px 0px .4rem .4rem !important;border-bottom: 0px;" : "border-radius: 0px !important;"}
+                                                                border-left-width: 0px;
+                                                                border-right-width: 0px;
                                                                 &:hover {
                                                                     cursor: pointer;
                                                                     background: whitesmoke;
@@ -879,11 +962,21 @@ export default class Guide extends PageBP<Props, State> {
                                     )
                                 ) : (
                                     <ListGroup
-                                        className={cx(Styles.positional_s, (this.state.dark ? Styles.dark_s : Styles.light_s))}
-                                        style={{ marginTop: 25 }}
+                                        className={cx(
+                                            Styles.positional_s(this.state.contents ? "bottom" : undefined),
+                                            (this.state.dark ? Styles.dark_s : Styles.light_s)
+                                        )}
+                                        style={{ marginTop: this.state.contents ? 0 : 15 }}
                                     >
                                         <ListGroupItem
-                                            style={{ padding: "38px 20px", fontSize: "1.25rem", fontWeight: "bold", borderTop: 0, borderBottomWidth: 2, background: this.state.dark ? "#1A1A1B" : "white" }}
+                                            style={{
+                                                padding: "38px 20px",
+                                                fontSize: "1.25rem",
+                                                fontWeight: "bold",
+                                                border: 0,
+                                                borderRadius: ".4rem",
+                                                background: this.state.dark ? "#161616" : "white"
+                                            }}
                                             className={cx(css`
                                                 ${!this.state.dark && "background: white !important;"}
                                             `)}
@@ -901,7 +994,7 @@ export default class Guide extends PageBP<Props, State> {
                         {/*<TopGuidesWidget/>*/}
                     </Col>
                 </Row>
-            </Template>
+            </Template >
         )
     }
 }

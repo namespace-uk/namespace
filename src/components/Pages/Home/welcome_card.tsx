@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 import { css, cx } from "@emotion/css";
-import {Button} from "react-bootstrap";
+import { Button } from "react-bootstrap";
 
 const Styles = {
     card_s: css`
@@ -27,19 +27,24 @@ export default class WelcomeCard extends React.Component<Props, State> {
     render() {
         return (
             <div style={{ display: "table-cell", verticalAlign: "middle" }}>
-                <div className={cx( Styles.card_s )}>
-                    <img src="\assets\img\svg\logo.svg" style={{ display: "table", marginLeft: "auto", marginRight: "auto" }} width={80}/>
-                    <br/>
+                <div className={cx(Styles.card_s)}>
+                    <img
+                        src="\assets\img\svg\logo.svg"
+                        style={{ display: "table", marginLeft: "auto", marginRight: "auto" }}
+                        width={80}
+                        alt="Namespace Logo"
+                    />
+                    <br />
                     <h4 style={{ textAlign: "center", fontWeight: "bold" }}>Namespace</h4>
                     <h6 style={{ textAlign: "center", color: "#666" }}>The Online Learning Community</h6>
-                    <br/>
-                    <hr/>
+                    <br />
+                    <hr />
                     <Link to="/login">
                         <Button style={{ borderRadius: ".75rem", width: "100%", padding: 10, fontSize: "1rem" }}>
                             Log In
                         </Button>
                     </Link>
-                    <br/><br/>
+                    <br /><br />
                     <Link to="/register">
                         <Button style={{ borderRadius: ".75rem", width: "100%", padding: 10, fontSize: "1rem", background: "white", border: "2px solid #ededed", color: "#666" }}>
                             Create an Account

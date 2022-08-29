@@ -277,7 +277,12 @@ export default class SignupPage extends PageBP<Props, State> {
                         {
                             this.state.page === 1 && (
                                 <Link to="/auth/login">
-                                    <Button id="login_instead_btn" variant="light" size="sm" style={{ fontFamily: "Jost", width: "100%", marginTop: 10, color: "#666" }}>
+                                    <Button
+                                        id="login_instead_btn"
+                                        variant="light" size="sm"
+                                        style={{ fontFamily: "Jost", width: "100%", marginTop: 10 }}
+                                        className={PageBP.Styles.button(false)}
+                                    >
                                         <LogIn size={12} />&nbsp;
                                         Login Instead?
                                     </Button>
