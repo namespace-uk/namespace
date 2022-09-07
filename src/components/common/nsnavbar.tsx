@@ -2,7 +2,7 @@ import React from "react";
 import { Link, Redirect } from "react-router-dom";
 
 import { Button, OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
-import { Bookmark, Folder, Globe, Home, LogOut, Moon, Plus, Sun, User } from "react-feather";
+import { Bookmark, Folder, Globe, Home, LogOut, Moon, Plus, Settings, Sun, User } from "react-feather";
 import CStyles from "./common_styles";
 import config from "../../config";
 
@@ -12,6 +12,7 @@ import Avatar from "boring-avatars";
 
 import $ from "jquery";
 import { BounceLoader } from "react-spinners";
+import { MenuBtn } from "./dropdown";
 
 const Styles = {
     header_s: css`
@@ -21,7 +22,7 @@ const Styles = {
     `,
     header_s_dark: css`
         height: 51px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.23);
+        border-bottom: 1px solid #343434;
     `,
     minor_header_s: css`
         border-bottom: 1px solid #dcdcdc;
@@ -29,7 +30,7 @@ const Styles = {
         overflow: auto;
     `,
     minor_header_s_dark: css`
-        border-bottom: 1px solid rgba(255, 255, 255, 0.23);
+        border-bottom: 1px solid #343434;
         padding: 10px 5px;
         overflow: auto;
     `,
@@ -46,7 +47,7 @@ const Styles = {
         padding-right: 8px;
         
         max-width: 500px;
-        width: calc(100% - 5px);
+        width: calc(100% - 20px);
         z-index: 2;
         
         &:hover, &:focus-within, &:active {
@@ -64,13 +65,6 @@ const Styles = {
             outline: 0 !important;
         }
 
-        left: 50px;
-
-        @media (max-width: 1092px) {
-            width: calc(100vw - 620px);
-            position: relative;
-        }
-
         @media (max-width: 650px) {
             display: none;
         }
@@ -82,7 +76,7 @@ const Styles = {
                 color: white !important;
             }
         }
-        border-color: #444;
+        border-color: #343434;
     `,
     inner_search_s: css`
         height: 37px; 
@@ -103,39 +97,46 @@ const Styles = {
     logo_s: css`
         color: black;
         position: relative;
-        top: 2.5px;
+        top: 6px;
         
         &:hover {
           text-decoration: none;
           color: rgba(0, 0, 0, 0.7);
         }
+
+        @media (min-width: 650px) {
+            min-width: 185px;
+        }
     `,
     tag_s: css`
-      background: whitesmoke;
-      padding: 5px 14px;
+      background: rgba(56,139,253,0.15);
+      color: #0969da !important;
+      padding: 6px 15px;
       margin-right: 5px;
       border-radius: 20px;
       font-family: Jost, sans-serif;
-      border: 1px solid #dcdcdc;
+      border: 0px solid rgba(56,139,253,0.15);
       &:hover{ 
           cursor: pointer; 
-          background: #efefef; 
+          background: var(--primary);
+          color: white !important;
           border-width: 3px;
           padding: 3px 12px;
       }
       white-space: nowrap;
     `,
     tag_s_dark: css`
-        background: black;
-        color: white !important;
-        padding: 5px 14px;
+        background: rgba(56,139,253,0.15);
+        color: #58a6ff !important;
+        padding: 6px 15px;
         margin-right: 5px;
         border-radius: 20px;
         font-family: Jost, sans-serif;
-        border: 1px solid dimgray;
+        border: 0px solid rgba(56,139,253,0.15);
         &:hover{ 
             cursor: pointer; 
-            background: #333; 
+            background: var(--primary);
+            color: white !important; 
             border-width: 3px;
             padding: 3px 12px;
         }
@@ -166,7 +167,7 @@ const Styles = {
         }
     `,
     nav_icon_dark: css`
-        border: 1px solid dimgray;
+        border: 1px solid #666;
         display: inline-flex;
         justify-content: center;
         align-items: center;
@@ -226,7 +227,6 @@ export default class NsNavbar extends React.Component<Props, State> {
         }
 
         this.signout = this.signout.bind(this);
-        this.createGuide = this.createGuide.bind(this);
     }
 
     toggleDropdown() {
@@ -239,9 +239,9 @@ export default class NsNavbar extends React.Component<Props, State> {
         window.location.href = `${window.location.origin}/search/${queryStr}`;
     }
 
-    createGuide() {
+    createGuide = () => {
         if (!this.props.user) {
-            this.setState({ redirectData: [true, "/login"] });
+            this.setState({ redirectData: [true, "/auth/login"] });
             return;
         } else this.setState({ creatingGuide: true });
         const options = {
@@ -280,102 +280,144 @@ export default class NsNavbar extends React.Component<Props, State> {
         const navIconStyle = this.props.dark ? Styles.nav_icon_dark : Styles.nav_icon;
 
         return (
-            <div style={{ background: (this.props.dark ? "#1A1A1B" : "white") }}>
+            <div style={{ background: (this.props.dark ? "#161616" : "white") }}>
                 {this.state.redirectData[1] && <Redirect to={this.state.redirectData[1] as string} />}
-                <header className={cx(this.props.dark ? Styles.header_s_dark : Styles.header_s)}>
-                    <div style={{ display: "inline-block", position: "absolute", height: 40, top: -4, padding: "8px 15px" }}>
-                        <Link to="/" className={cx(Styles.logo_s)}>
-                            <img
-                                alt="Namespace Logo"
-                                src="/assets/img/svg/logo.svg"
-                                height={39} width={39}
-                                style={{
-                                    borderRadius: ".25rem",
-                                    marginBottom: 8, padding: 5
-                                }}
-                            />
-                            &nbsp;
-                            <span
-                                style={{ fontFamily: "Jost, sans-serif", fontSize: "17pt", fontWeight: "bold", color: (this.props.dark ? "white" : "black") }}
-                                className={cx(css`
+                <header
+                    className={cx(this.props.dark ? Styles.header_s_dark : Styles.header_s)}
+                    style={{
+                        display: "flex", paddingLeft: 10, paddingRight: 10,
+                        justifyContent: "space-evenly"
+                    }}
+                >
+                    <Link
+                        to="/" className={cx(Styles.logo_s)}
+                        style={{
+                            marginRight: 5,
+                            flex: 1, flexGrow: 0,
+                            flexShrink: 1
+                        }}
+                    >
+                        <img
+                            alt="Namespace Logo"
+                            src="/assets/img/svg/logo.svg"
+                            height={39} width={39}
+                            style={{
+                                borderRadius: ".25rem",
+                                marginBottom: 8, padding: 5,
+                                marginRight: 5
+                            }}
+                        />
+                        <span
+                            style={{
+                                fontFamily: "Jost, sans-serif",
+                                fontSize: "17pt", fontWeight: "bold",
+                                color: (this.props.dark ? "white" : "black")
+                            }}
+                            className={cx(css`
                                     @media (max-width: 650px) {
                                         display: none;
                                     }
                                 `)}
-                            >
-                                Namespace
-                                <sup style={{ color: "#666" }}><small>{config.version}</small></sup>
-                            </span>
-                        </Link>
-                        &nbsp;&nbsp;&nbsp;
-                        <OverlayTrigger
-                            key="k-home-link"
-                            placement="bottom"
-                            overlay={
-                                <Tooltip id="home-link-tooltip">
-                                    Home
-                                </Tooltip>
-                            }
                         >
-                            <Link to="/" className={cx(navIconStyle)}>
-                                <Home />
-                            </Link>
-                        </OverlayTrigger>
-                        &nbsp;
-                        <OverlayTrigger
-                            key="k-bookmarks-link"
-                            placement="bottom"
-                            overlay={
-                                <Tooltip id="new-guide-tooltip">
-                                    My Bookmarks
-                                </Tooltip>
-                            }
-                        >
-                            <Link to="/bookmarks" className={cx(navIconStyle)}>
-                                <Bookmark />
-                            </Link>
-                        </OverlayTrigger>
-                        &nbsp;
-                        <OverlayTrigger
-                            key="k-new-guide"
-                            placement="bottom"
-                            overlay={
-                                <Tooltip id="new-guide-tooltip">
-                                    New Guide
-                                </Tooltip>
-                            }
-                        >
-                            <span className={cx(navIconStyle)} onClick={!this.state.creatingGuide ? this.createGuide : undefined}>
-                                {
-                                    !this.state.creatingGuide ? <Plus />
-                                        : <BounceLoader size={20} color={this.props.dark ? "whitesmoke" : "black"} />
-                                }
-                            </span>
-                        </OverlayTrigger>
-                        &nbsp;
-                    </div>
+                            Namespace
+                            <sup style={{ color: "#666" }}><small>{config.version}</small></sup>
+                        </span>
+                    </Link>
                     <div
-                        id="search"
-                        className={cx(Styles.search_s, (this.props.dark ? Styles.search_s_dark : null))}
                         style={{
-                            background: this.props.dark ? "black" : "whitesmoke"
+                            display: "flex",
+                            flex: 1, flexGrow: 0,
+                            position: "relative",
+                            height: 40, top: -4,
+                            padding: "8px 0px 8px 5px"
                         }}
                     >
-                        <label form="main_search" htmlFor="main_search" className={cx(Styles.search_label_s)}>
-                            <svg id="search_icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={this.props.dark ? "whitesmoke" : "black"} stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="feather feather-search">
-                                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
-                        </label>
-                        <form onSubmit={(e) => { e.preventDefault(); this.submitSearchQuery(); }}>
-                            <input
-                                className={cx(Styles.inner_search_s)}
-                                id="main_search" name="main_search"
-                                type="search" placeholder="Search"
-                                defaultValue={this.props.defaultSearchValue}
-                            />
-                        </form>
+                        <div
+                            style={{
+                                display: "flex",
+                                gap: 5
+                            }}
+                        >
+                            <OverlayTrigger
+                                key="k-home-link"
+                                placement="bottom"
+                                overlay={
+                                    <Tooltip id="home-link-tooltip">
+                                        Home
+                                    </Tooltip>
+                                }
+                            >
+                                <Link to="/" className={cx(navIconStyle)}>
+                                    <Home />
+                                </Link>
+                            </OverlayTrigger>
+                            <OverlayTrigger
+                                key="k-bookmarks-link"
+                                placement="bottom"
+                                overlay={
+                                    <Tooltip id="new-guide-tooltip">
+                                        My Bookmarks
+                                    </Tooltip>
+                                }
+                            >
+                                <Link to="/bookmarks" className={cx(navIconStyle)}>
+                                    <Bookmark />
+                                </Link>
+                            </OverlayTrigger>
+                            <OverlayTrigger
+                                key="k-new-guide"
+                                placement="bottom"
+                                overlay={
+                                    <Tooltip id="new-guide-tooltip">
+                                        New Guide
+                                    </Tooltip>
+                                }
+                            >
+                                <span className={cx(navIconStyle)} onClick={!this.state.creatingGuide ? this.createGuide : undefined}>
+                                    {
+                                        !this.state.creatingGuide ? <Plus />
+                                            : <BounceLoader size={20} color={this.props.dark ? "whitesmoke" : "black"} />
+                                    }
+                                </span>
+                            </OverlayTrigger>
+                        </div>
                     </div>
-                    <div id="prof_img" className={cx(Styles.prof_img_s)} style={{ position: "absolute", top: 2, right: 20 }}>
+                    <div
+                        style={{ flex: 3, flexGrow: 1, justifyItems: "center" }}
+                    >
+                        <div
+                            id="search"
+                            className={cx(Styles.search_s, (this.props.dark ? Styles.search_s_dark : null))}
+                            style={{
+                                background: this.props.dark ? "black" : "whitesmoke"
+                            }}
+                        >
+                            <label form="main_search" htmlFor="main_search" className={cx(Styles.search_label_s)}>
+                                <svg id="search_icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={this.props.dark ? "whitesmoke" : "black"} stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="feather feather-search">
+                                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </label>
+                            <form onSubmit={(e) => { e.preventDefault(); this.submitSearchQuery(); }}>
+                                <input
+                                    className={cx(Styles.inner_search_s)}
+                                    id="main_search" name="main_search"
+                                    type="search" placeholder="Search"
+                                    defaultValue={this.props.defaultSearchValue}
+                                />
+                            </form>
+                        </div>
+                    </div>
+                    <div
+                        id="prof_img"
+                        className={cx(Styles.prof_img_s)}
+                        style={{
+                            position: "relative",
+                            top: 2, flex: 1,
+                            flexGrow: 0,
+                            display: "flex",
+                            gap: 5
+                        }}
+                    >
                         <Link
                             to="/lists"
                             style={{ position: "relative", top: 2.5, width: 83, borderRadius: 20, fontFamily: "Jost" }}
@@ -385,7 +427,6 @@ export default class NsNavbar extends React.Component<Props, State> {
                             &nbsp;
                             Lists
                         </Link>
-                        &nbsp;&nbsp;
                         <OverlayTrigger
                             key="k-dark-mode"
                             placement="bottom"
@@ -401,7 +442,6 @@ export default class NsNavbar extends React.Component<Props, State> {
                                 }
                             </span>
                         </OverlayTrigger>
-                        &nbsp;&nbsp;
                         <OverlayTrigger
                             key="k-namespaces"
                             placement="bottom"
@@ -415,7 +455,6 @@ export default class NsNavbar extends React.Component<Props, State> {
                                 <Globe style={{ position: "relative", top: 0.5 }} />
                             </Link>
                         </OverlayTrigger>
-                        &nbsp;&nbsp;
                         {this.props.user ? (
                             <OverlayTrigger
                                 trigger="click"
@@ -424,20 +463,20 @@ export default class NsNavbar extends React.Component<Props, State> {
                                     <Popover
                                         id="usr-dropdown-pop"
                                         className={cx("shadow", (this.props.dark ? css`
-                                                    background: #1A1A1B;
+                                                    background: #161616;
                                                     .arrow::after {
-                                                        border-bottom-color: #1A1A1B;
+                                                        border-bottom-color: #161616;
                                                     }
-                                                    border-color: #666 !important;
+                                                    border-color: #343434 !important;
                                                     hr {
-                                                        border-color: #444;
+                                                        border-color: #343434;
                                                     }
                                                     h6 { color: white; }
                                                     .btn {
-                                                        background: #1A1A1B;
+                                                        background: #161616;
                                                         color: white;
                                                         &:hover {
-                                                           background: #444;
+                                                           background: #343434;
                                                         }
                                                     }
                                                 ` : css`
@@ -447,59 +486,65 @@ export default class NsNavbar extends React.Component<Props, State> {
                                         ))}
                                         style={{
                                             border: "1px solid",
-                                            padding: 10, borderRadius: ".35rem",
+                                            borderRadius: ".35rem",
                                             fontFamily: "Jost", width: 250,
                                             transition: "all 0s"
                                         }}
                                     >
-                                        <h6 style={{ padding: 15, margin: 0, fontWeight: "bold" }}>{this.props.user.getUsername()}</h6>
+                                        <div style={{ padding: 10 }}>
+                                            <h6 style={{ margin: 0, fontWeight: "bold" }}>{this.props.user.getUsername()}</h6>
+                                        </div>
                                         <hr style={{ margin: 0 }} />
-                                        <div style={{ paddingTop: 5 }} className={cx(css`
-                                                & > *:not(:last-child) {
-                                                    margin-bottom: 5px;
+                                        <div style={{ padding: 10 }} className={cx(css`
+                                                & > *:last-child {
+                                                    border-bottom-right-radius: .4rem !important;
+                                                    border-bottom-left-radius: .4rem !important;
                                                 }
                                             `)}>
                                             <Link to={`/user/${this.props.user.getUsername()}`}>
-                                                <Button variant="light" className={cx(Styles.user_menu_btn_s)} style={{ width: "100%" }}>
+                                                <MenuBtn dark={this.props.dark}>
                                                     <User size={17} style={{ position: "relative", bottom: 2 }} color="#666" />
                                                     &nbsp;
                                                     Profile
-                                                </Button>
+                                                </MenuBtn>
                                             </Link>
+                                            <div style={{ height: 5 }} />
                                             <Link to="/bookmarks">
-                                                <Button variant="light" className={cx(Styles.user_menu_btn_s)} style={{ width: "100%" }}>
+                                                <MenuBtn dark={this.props.dark}>
                                                     <Bookmark size={17} style={{ position: "relative", bottom: 2 }} color="#666" />
                                                     &nbsp;
                                                     Bookmarks
-                                                </Button>
+                                                </MenuBtn>
                                             </Link>
+                                            <div style={{ height: 5 }} />
                                             <Link to="/lists">
-                                                <Button variant="light" className={cx(Styles.user_menu_btn_s)} style={{ width: "100%" }}>
+                                                <MenuBtn dark={this.props.dark}>
                                                     <Folder size={17} style={{ position: "relative", bottom: 2 }} color="#666" />
                                                     &nbsp;
                                                     Lists
-                                                </Button>
+                                                </MenuBtn>
                                             </Link>
-                                            {/*<Link to="/preferences">
-                                                <Button variant="light" className={cx(Styles.user_menu_btn_s)} style={{ width: "100%" }}>
+                                            <div style={{ height: 5 }} />
+                                            <Link to="/preferences">
+                                                <MenuBtn dark={this.props.dark}>
                                                     <Settings size={16} color="#666" />
                                                     &nbsp;
                                                     Preferences
-                                                </Button>
-                                            </Link>*/}
-                                            <br />
-                                            <Button variant="light" className={cx(Styles.user_menu_btn_s)} style={{ width: "100%" }} onClick={this.signout}>
+                                                </MenuBtn>
+                                            </Link>
+                                            <div style={{ height: 5 }} />
+                                            <MenuBtn dark={this.props.dark} onClick={this.signout}>
                                                 <LogOut size={16} style={{ position: "relative", bottom: 2 }} color="#666" />
                                                 &nbsp;
                                                 Log Out
-                                            </Button>
+                                            </MenuBtn>
                                         </div>
                                     </Popover>
                                 }
                                 placement="bottom"
                             >
 
-                                <span onClick={this.toggleDropdown}>
+                                <span onClick={this.toggleDropdown} style={{ position: "relative", top: 3 }}>
                                     <Avatar
                                         size={39}
                                         name={this.props.user.getUsername()}
@@ -526,11 +571,11 @@ export default class NsNavbar extends React.Component<Props, State> {
                         }
                     </div>
                     {/* <NavButtons/> */}
-                </header>
+                </header >
                 <header className={cx(this.props.dark ? Styles.minor_header_s_dark : Styles.minor_header_s)}>
                     {
                         ["cs140", "python", "cs141", "css", "webdev", "html", "algorithms", "math", "ethics"].map(name => (
-                            <Link to={`/search/${name}`} onClick={() => { this.forceUpdate() }} className={cx(CStyles.flat_link)}>
+                            <Link to={`/search/${name}?facet`} onClick={() => { this.forceUpdate() }} className={cx(CStyles.flat_link)}>
                                 <span className={cx(this.props.dark ? Styles.tag_s_dark : Styles.tag_s)} style={{ background: (this.props.dark ? "" : ""), color: "black" }}>
                                     {name}
                                 </span>
@@ -541,7 +586,7 @@ export default class NsNavbar extends React.Component<Props, State> {
                 <Link id="hiddenSearchBtnLink" to={`/search/${$("#main_search").val()}`}>
                     <Button id="hiddenSearchBtn" hidden></Button>
                 </Link>
-            </div>
+            </div >
         )
     }
 }

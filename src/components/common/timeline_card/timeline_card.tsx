@@ -57,11 +57,11 @@ const TimelineCard: React.FC<{
                             style={{
                                 fontFamily: "Jost",
                                 padding: "30px 30px 20px 30px",
-                                background: (props.dark ? "#1A1A1B" : undefined),
+                                background: (props.dark ? "#161616" : undefined),
                                 color: (props.dark ? "whitesmoke" : "#333"),
                                 border: "1px solid",
                                 borderRadius: ".35rem",
-                                borderColor: (props.dark ? "#444" : "#dcdcdc")
+                                borderColor: (props.dark ? "#343434" : "#dcdcdc")
                             }}
                         >
                             <h5 style={{ fontWeight: "bold" }}>
@@ -93,7 +93,7 @@ const TimelineCard: React.FC<{
                                             <Button
                                                 style={{ border: 0, width: "100%", marginBottom: 10 }}
                                                 className={cx(props.dark ? css`
-                                                background: #444 !important;
+                                                background: #343434 !important;
                                                 color: whitesmoke;
                                                 &:hover, &:active, &:focus {
                                                     background: #666 !important;
@@ -134,7 +134,7 @@ const TimelineCard: React.FC<{
                                     <div
                                         className={cx("text-center list-group-item-primary",
                                             (props.dark && css`
-                                            background: #444;
+                                            background: #343434;
                                             color: whitesmoke;
                                         `)
                                         )}
@@ -166,65 +166,73 @@ const TimelineCard: React.FC<{
                             width: 100%;
                             border-radius: ${props.hideMore ? ".45rem" : "var(--radius-md)"};
                             border: 1px solid;
-                            padding: 26px 30px 25px 30px;
-                            transition: border-width .07s, padding .07s;
-                    
+                            &, .detailbar, .inner {
+                                transition: border-width .07s, padding .07s;
+                            }
+
+                            .detailbar { 
+                                padding: 5px; 
+                                /*background: black;
+                                border-radius: 0px 0px .35rem .35rem;*/
+                            }
+                            .inner { padding: 26px 30px 25px 30px; }
+
                             &:hover {
                                 border-color: ${props.dark ? "#666" : "#c4c4c4"};
                                 border-width: 2px;
-                                padding: 25px 29px 24px 29px;
+                                .inner { padding: 25px 29px 25px 29px; }
+                                .detailbar { padding: 5px 4px 4px 4px; }
                                 cursor: pointer;
                             }
                         `
                     )}
                 >
-
-                    {
-                        !props.hideMore && props.moreData && (
-                            <div style={{ position: "absolute", right: 43, marginTop: -2, width: 35, height: 35 }}>
-                                <DropdownOnClick
-                                    popoverId="guide-more-dropdown"
-                                    placement="bottom"
-                                    dark={props.dark}
-                                    overlay={
+                    <div className="inner">
+                        {
+                            !props.hideMore && props.moreData && (
+                                <div style={{ position: "absolute", right: 43, marginTop: -2, width: 35, height: 35 }} hidden>
+                                    <DropdownOnClick
+                                        popoverId="guide-more-dropdown"
+                                        placement="bottom"
+                                        dark={props.dark}
+                                        overlay={
+                                            <Link to="#" onClick={(e) => e.preventDefault()}>
+                                                <MenuBtn onClick={() => setShowAddToListModal(true)} dark={props.dark}>
+                                                    <Book size={17} style={{ position: "relative", bottom: 2 }} color="#666" />&nbsp;
+                                                    Add to List
+                                                </MenuBtn>
+                                            </Link>
+                                        }
+                                    >
                                         <Link to="#" onClick={(e) => e.preventDefault()}>
-                                            <MenuBtn onClick={() => setShowAddToListModal(true)}>
-                                                <Book size={17} style={{ position: "relative", bottom: 2 }} color="#666" />&nbsp;
-                                                Add to List
-                                            </MenuBtn>
-                                        </Link>
-                                    }
-                                >
-                                    <Link to="#" onClick={(e) => e.preventDefault()}>
-                                        <div
-                                            id={props.moreData && `more-btn-${props.moreData?.index}`}
-                                            className={cx(css`
+                                            <div
+                                                className={cx(css`
                                                 padding: 5px;
                                                 border-radius: .35rem;
-                                                color: ${props.dark ? "#444" : "grey"};
+                                                color: ${props.dark ? "#343434" : "grey"};
                                                 &:hover {
                                                     color: ${props.dark ? "white" : "#555"};
                                                     cursor: pointer;
-                                                    background: ${props.dark ? "#444" : "whitesmoke"};
+                                                    background: ${props.dark ? "#343434" : "whitesmoke"};
                                                 }
                                             `)}
-                                        >
-                                            <span style={{ position: "relative", bottom: 1 }}>
-                                                <MoreHorizontal size={24} />
-                                            </span>
-                                        </div>
-                                    </Link>
-                                </DropdownOnClick>
-                            </div>
-                        )
-                    }
-                    {
-                        props.hideMore ? <h5 style={{ fontWeight: "bold" }}>
-                            {props.guide.header}
-                        </h5> : (
-                            <h3
-                                style={{ fontWeight: "bold" }}
-                                className={cx(css`
+                                            >
+                                                <span style={{ position: "relative", bottom: 1 }}>
+                                                    <MoreHorizontal size={24} />
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    </DropdownOnClick>
+                                </div>
+                            )
+                        }
+                        {
+                            props.hideMore ? <h5 style={{ fontWeight: "bold" }}>
+                                {props.guide.header}
+                            </h5> : (
+                                <h3
+                                    style={{ fontWeight: "bold" }}
+                                    className={cx(css`
                                     ${!props.hideMore && "max-width: calc(100% - 40px);"}
                                     max-height: 4rem;
                                     overflow: hidden;
@@ -232,43 +240,88 @@ const TimelineCard: React.FC<{
                                     -webkit-line-clamp: 2;
                                     -webkit-box-orient: vertical; 
                                 `)}
-                            >{props.guide.header}</h3>
-                        )
-                    }
-                    <h6 style={{ color: "gray", margin: 0 }}>{(new Date(props.guide.timestamp)).toDateString()}</h6>
-                    {
-                        props.guide.description && (
-                            <>
-                                <div style={{ height: 20 }} />
-                                <p
-                                    style={{ margin: 0, wordBreak: "break-word", overflow: "hidden", fontFamily: "Jost" }}
-                                    className={cx(css`
+                                >{props.guide.header}</h3>
+                            )
+                        }
+                        <h6 style={{ color: "gray", margin: 0 }}>
+                            <span style={{ marginRight: 10 }}>
+                                {(new Date(props.guide.timestamp)).toDateString()}
+                            </span>
+                            <span
+                                className={cx(!props.dark ? css`
+                                    background: rgba(56,139,253,0.15);
+                                    color: #0969da !important;
+                                    border-radius: 20px;
+                                    font-family: Jost, sans-serif;
+                                    border: 0px solid rgba(56,139,253,0.15);
+                                    &:hover{ 
+                                        cursor: pointer; 
+                                        background: var(--primary);
+                                        color: white !important;
+                                    }
+                                    white-space: nowrap;
+                                ` : css`
+                                    background: rgba(56,139,253,0.25);
+                                    color: #58a6ff !important;
+                                    border-radius: 20px;
+                                    font-family: Jost, sans-serif;
+                                    border: 0px solid rgba(56,139,253,0.15);
+                                    &:hover{ 
+                                        cursor: pointer; 
+                                        background: var(--primary);
+                                        color: white !important; 
+                                    }
+                                    white-space: nowrap;
+                                `)}
+                                style={{
+                                    color: "black",
+                                    padding: "2px 10px",
+                                    fontSize: "10pt"
+                                }}
+                            >
+                                cs141
+                            </span>
+                        </h6>
+                        {
+                            props.guide.description && (
+                                <>
+                                    <div style={{ height: 20 }} />
+                                    <p
+                                        style={{ margin: 0, wordBreak: "break-word", overflow: "hidden", fontFamily: "Jost" }}
+                                        className={cx(css`
                                         display: -webkit-box;
                                         -webkit-line-clamp: 2;
                                         -webkit-box-orient: vertical; 
                                     `)}
-                                >
-                                    {props.guide.description}
-                                </p>
-                            </>
-                        )
-                    }
+                                    >
+                                        {props.guide.description}
+                                    </p>
+                                </>
+                            )
+                        }
+                    </div>
                     {
-                        <>
-                            <hr style={{ margin: "10px 0px 10px 0px" }} />
-                            <div style={{ height: 25 }}>
-                                <Link
-                                    to={`/user/${props.guide.user}`}
-                                    style={{
-                                        padding: "5px 10px",
-                                        fontSize: "14pt",
-                                        fontWeight: "bold",
-                                        borderRadius: ".35rem"
-                                    }}
-                                    className={cx(props.dark ? css`
+                        <div
+                            className="detailbar"
+                            style={{
+                                borderTop: "1px solid",
+                                borderColor: props.dark ? "#343434" : "#dcdcdc"
+                            }}
+                        >
+                            <div>
+                                <div style={{ padding: 5, display: "inline-block" }}>
+                                    <Link
+                                        to={`/user/${props.guide.user}`}
+                                        style={{
+                                            padding: "5px 10px",
+                                            fontSize: "14pt",
+                                            fontWeight: "bold",
+                                            borderRadius: ".35rem"
+                                        }}
+                                        className={cx(props.dark ? css`
                                         color: white !important;
                                         &:hover {
-                                            background: #444;
+                                            background: #343434;
                                             cursor: pointer;
                                         }
                                     ` : css`
@@ -277,20 +330,32 @@ const TimelineCard: React.FC<{
                                             cursor: pointer;
                                         }
                                     `, CStyles.flat_link)}
-                                >
-                                    <span style={{ position: "relative", bottom: 2 }}>
-                                        <Avatar
-                                            size={22}
-                                            name={props.guide.user}
-                                            variant="marble"
-                                            colors={["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"]}
-                                        />
-                                    </span>
-                                    {!props.hideMore && (
-                                        <>&nbsp;&nbsp;{props.guide.user}</>
-                                    )}
-                                </Link>
-                                <span style={{ padding: 5, float: "right", color: "grey", position: "relative", bottom: 3 }}>
+                                    >
+                                        <span style={{ position: "relative", bottom: 2 }}>
+                                            <Avatar
+                                                size={22}
+                                                name={props.guide.user}
+                                                variant="marble"
+                                                colors={["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"]}
+                                            />
+                                        </span>
+                                        {!props.hideMore && (
+                                            <>&nbsp;&nbsp;{props.guide.user}</>
+                                        )}
+                                    </Link>
+                                </div>
+                                <Link to="#"
+                                    onClick={e => e.preventDefault()}
+                                    className={cx(CStyles.flat_link)}
+                                    style={{
+                                        padding: 5,
+                                        float: "right",
+                                        color: "grey",
+                                        position: "relative",
+                                        bottom: 1,
+                                        display: "flex",
+                                        alignItems: "baseline"
+                                    }}>
                                     {
                                         props.guide.isPrivate ? (
                                             <>
@@ -319,13 +384,42 @@ const TimelineCard: React.FC<{
                                         {props.guide.likes ? props.guide.likes : 0}
                                     </span>
                                     &nbsp;
-                                </span>
+                                    {
+                                        props.moreData && (
+                                            <>
+                                                &middot;
+                                                &nbsp;
+                                                <DropdownOnClick
+                                                    popoverId="guide-more-dropdown"
+                                                    placement="bottom"
+                                                    dark={props.dark}
+                                                    overlay={
+                                                        <Link to="#" onClick={(e) => e.preventDefault()}>
+                                                            <MenuBtn onClick={() => setShowAddToListModal(true)} dark={props.dark}>
+                                                                <Book size={17} style={{ position: "relative", bottom: 2 }} color="#666" />&nbsp;
+                                                                Add to List
+                                                            </MenuBtn>
+                                                        </Link>
+                                                    }
+                                                >
+                                                    <Button size="sm"
+                                                        id={props.moreData && `more-btn-${props.moreData?.index}`}
+                                                        style={{ border: "3px solid", paddingBottom: 2 }}
+                                                        className={PageBP.Styles.button(props.dark, true)}
+                                                    >
+                                                        <MoreHorizontal size={20} style={{ position: "relative", bottom: 1.5 }} />
+                                                    </Button>
+                                                </DropdownOnClick>
+                                            </>
+                                        )
+                                    }
+                                </Link>
                             </div>
-                        </>
+                        </div>
                     }
                 </div>
             </Link>
-            <br />
+            <div style={{ height: 15 }} />
         </>
     );
 }

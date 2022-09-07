@@ -24,22 +24,26 @@ const Styles = {
         border-radius: 0.35rem;
 
         &:hover {
-            border-color: #c4c4c4;
+            border-width: 2px;
+            border-color: #cdcdcd;
+            padding: 19px 19px 14px 19px;
             cursor: pointer;
         }
     `,
     timeline_card_s_dark: css`
         padding: 20px 20px 15px 20px;
-        background: #1A1A1B;
+        background: #161616;
         color: #DDD;
-        border-color: #444;
+        border-color: #343434;
 
         hr {
-            border-color: #444;
+            border-color: #343434;
         }
         
         &:hover {
-            border-color: whitesmoke;
+            border-width: 2px;
+            border-color: #555;
+            padding: 19px 19px 14px 19px;
             cursor: pointer;
         }
     `,
@@ -89,7 +93,7 @@ const GuideToggle: React.FC<{
                 (props.state === ToggleState.ON && Styles.active_card),
                 (props.state === ToggleState.LOADING && Styles.loading_card)
             )}
-            style={{ transition: "all .2s" }}
+            style={{ transition: "all .2s", flexShrink: 0 }}
             onClick={async () => {
                 const list = props.list;
 

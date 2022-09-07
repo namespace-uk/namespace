@@ -43,7 +43,9 @@ type State = {
     dark: boolean,
     search_results: Guide[],
     search_is_done: boolean,
-    user: CognitoUser | null
+    user: CognitoUser | null,
+    isTagSearch: boolean,
+    query: string
 };
 
 export default class SearchPage extends PageBP<Props, State> {
@@ -51,15 +53,18 @@ export default class SearchPage extends PageBP<Props, State> {
     constructor(props: Props) {
         super(props);
 
+        const searchParams = new URLSearchParams((new URL(window.location.href)).search);
 
         this.state = {
             dark: this.localStorage!.getItem("darkmode") === "true",
             search_results: [],
             search_is_done: false,
-            user: (new UserHandler()).getUser()
+            user: (new UserHandler()).getUser(),
+            isTagSearch: searchParams.has("facet"),
+            query: this.props.match.params.query
         };
 
-        this.getSearchResultsData(this.props.match.params.query);
+        this.getSearchResultsData(this.state.query);
     }
 
     async init() { }
@@ -68,7 +73,8 @@ export default class SearchPage extends PageBP<Props, State> {
         const client = new typesense.SearchClient(config.typesense_search_options);
         const res = await client.collections("guides").documents().search({
             "q": search_term,
-            "query_by": "header"
+            "query_by": "header",
+            "filter_by": "isprivate:=PF"
         }, {});
         if (res.hits) this.setState({
             search_results: res.hits.map(x => x.document as Guide),
@@ -93,11 +99,66 @@ export default class SearchPage extends PageBP<Props, State> {
                         </LocationCard>
                         <br />
                         {
+                            this.state.isTagSearch && (
+                                <>
+                                    <div style={{ textAlign: "center", padding: 10 }}>
+                                        <span
+                                            style={{
+                                                fontFamily: "Jost",
+                                                color: this.state.dark ? "white" : "#333",
+                                                fontSize: "16pt",
+                                                paddingRight: 5,
+                                                position: "relative",
+                                                top: 3
+                                            }}
+                                        >Guides tagged</span>&nbsp;
+                                        <span
+                                            className={cx(!this.state.dark ? css`
+                                                background: rgba(56,139,253,0.15);
+                                                color: #0969da !important;
+                                                padding: 6px 15px;
+                                                margin-right: 5px;
+                                                border-radius: 20px;
+                                                font-family: Jost, sans-serif;
+                                                border: 0px solid rgba(56,139,253,0.15);
+                                                &:hover{ 
+                                                    cursor: pointer; 
+                                                    background: var(--primary);
+                                                    color: white !important;
+                                                    border-width: 3px;
+                                                    padding: 3px 12px;
+                                                }
+                                                white-space: nowrap;
+                                            ` : css`
+                                                background: rgba(56,139,253,0.25);
+                                                color: #58a6ff !important;
+                                                padding: 6px 15px;
+                                                margin-right: 5px;
+                                                border-radius: 20px;
+                                                font-family: Jost, sans-serif;
+                                                border: 0px solid rgba(56,139,253,0.15);
+                                                &:hover{ 
+                                                    cursor: pointer; 
+                                                    background: var(--primary);
+                                                    color: white !important; 
+                                                    border-width: 3px;
+                                                    padding: 3px 12px;
+                                                }
+                                                white-space: nowrap;
+                                            `)} style={{ color: "black" }}>
+                                            {this.state.query}
+                                        </span>
+                                    </div>
+                                    <hr style={{ borderColor: this.state.dark ? "#343434" : "#dcdcdc" }} />
+                                </>
+                            )
+                        }
+                        {
                             this.state.search_is_done ? (this.state.search_results.length === 0 ? (
                                 <div
                                     className={cx("text-center list-group-item-danger",
                                         (this.state.dark && css`
-                                            background: #444;
+                                            background: #343434;
                                             color: whitesmoke;
                                         `)
                                     )}
@@ -126,7 +187,7 @@ export default class SearchPage extends PageBP<Props, State> {
                     </Col>
                     <Col md={4} sm={0} className={cx(CStyles.small_col_s)}>
                         <ProfileCard user={this.state.user} dark={this.state.dark} localStorage={this.localStorage!} hasLoaded />
-                        <br />
+                        <div style={{ height: 15 }} />
                         <TopGuidesWidget dark={this.state.dark} />
                         <Footnote dark={this.state.dark} />
                     </Col>

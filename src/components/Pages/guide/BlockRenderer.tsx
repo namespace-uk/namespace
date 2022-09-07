@@ -19,11 +19,12 @@ export default class BlockRenderer {
                 case "textseq": {
                     return (
                         <>
-                            <div 
-                                style={{ 
-                                    width: "100%", background: dark ? "#1A1A1B" : "white", 
-                                    border: "1px solid", borderColor: dark ? "#444" : "#dcdcdc",
-                                    borderRadius: ".35rem", fontFamily: "Jost", fontSize: 17, padding: 40,
+                            <div
+                                style={{
+                                    width: "100%", background: dark ? "#161616" : "white",
+                                    border: "1px solid", borderColor: dark ? "#343434" : "#dcdcdc",
+                                    borderRadius: ".35rem", fontFamily: "Jost", fontSize: 17,
+                                    // padding: 40,
                                     whiteSpace: "pre-wrap", overflowWrap: "anywhere",
                                     color: dark ? "whitesmoke" : "black", lineHeight: 1.4
                                 }}
@@ -31,22 +32,23 @@ export default class BlockRenderer {
                                     & > p {
                                         margin-bottom: 0px !important;
                                     }
-                                    ${dark && "hr { border-color: #444; }"}
+                                    ${dark && "hr { border-color: #343434; }"}
                                 `)}
                             >
                                 {
                                     (x.data.text as string[])
-                                    .map(y => (x.data.type === "markdown") ? (
-                                            <ReactMarkdown 
-                                                remarkPlugins={[remarkGfm, remarkMath]} 
+                                        .map(y => (x.data.type === "markdown") ? (
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm, remarkMath]}
                                                 rehypePlugins={[rehypeKatex]}
                                                 className={cx(css`
+                                                    padding: 35px;
                                                     .contains-task-list {
                                                         list-style-type: none !important;
                                                         padding: 0px !important;
                                                     }
                                                     & > pre {
-                                                        border: 1px solid ${dark ? "#444" : "#dcdcdc"};
+                                                        border: 1px solid ${dark ? "#343434" : "#dcdcdc"};
                                                         background: ${dark ? "black" : "whitesmoke"};
                                                         ${dark && "color: whitesmoke;"}
                                                         padding: 20px;
@@ -74,30 +76,29 @@ export default class BlockRenderer {
                                                     }
                                                 `)}
                                             >{y}</ReactMarkdown>
-                                        ) : (<>{y}</>)
-                                    )
-                                    .reduce((prev: JSX.Element[],curr) => { prev.push(curr, (<hr style={{ marginTop: "1.4rem", marginBottom: "1.4rem" }}/>)); return prev; }, [])
-                                    .slice(0,-1)
+                                        ) : (<div style={{ padding: 40 }}>{y}</div>)
+                                        )
+                                        .reduce((prev: JSX.Element[], curr) => { prev.push(curr, (<hr style={{ marginTop: -10, marginBottom: -10 }} />)); return prev; }, [])
+                                        .slice(0, -1)
                                 }
                             </div>
                         </>
                     );
                 }
-                case "katexseq" : return (
+                case "katexseq": return (
                     <>
-                        <div 
+                        <div
                             style={{
                                 width: "100%",
                                 borderRadius: ".35rem",
                                 border: "1px solid",
-                                padding: 25,
                                 overflow: "auto"
                             }}
                             className={cx(dark ? css`
-                                background: #1A1A1B;
-                                border-color: #444 !important;
+                                background: #161616;
+                                border-color: #343434 !important;
                                 color: whitesmoke;
-                                hr { border-color: #444; }
+                                hr { border-color: #343434; }
                             ` : css`
                                 background: white;
                                 border-color: #dcdcdc !important;
@@ -105,11 +106,12 @@ export default class BlockRenderer {
                         >
                             {
                                 (x.data as string[])
-                                .map(x => 
+                                    .map(x =>
                                     (
-                                        <TeX 
-                                            settings={{ displayMode: true }} 
-                                            className={cx(css`
+                                        <div style={{ padding: 25 }}>
+                                            <TeX
+                                                settings={{ displayMode: true }}
+                                                className={cx(css`
                                                 .katex {
                                                     white-space: unset !important;
                                                 }
@@ -126,46 +128,47 @@ export default class BlockRenderer {
                                                     white-space: normal !important;
                                                 }
                                             `)}
-                                            style={{ margin: "40px 0px" }} 
-                                            block
-                                        >
-                                            {x}
-                                        </TeX>
+                                                style={{ margin: "40px 0px" }}
+                                                block
+                                            >
+                                                {x}
+                                            </TeX>
+                                        </div>
                                     )
-                                )
-                                .reduce((prev: JSX.Element[],curr) => { prev.push(curr, (<hr/>)); return prev; }, [])
-                                .slice(0,-1)
+                                    )
+                                    .reduce((prev: JSX.Element[], curr) => { prev.push(curr, (<hr style={{ marginTop: -10, marginBottom: -10 }} />)); return prev; }, [])
+                                    .slice(0, -1)
                             }
                         </div>
                     </>
                 );
-                case "section" : return (
+                case "section": return (
                     <>
                         <div
-                            id={`sec-${(x as unknown as {id: string}).id}`}
-                            style={{ 
-                                width: "100%", 
+                            id={`sec-${(x as unknown as { id: string }).id}`}
+                            style={{
+                                width: "100%",
                                 fontFamily: "Jost",
                                 fontWeight: "bold",
-                                fontSize: 35,
+                                fontSize: 25,
                                 textAlign: "center",
-                                border: dark ? "3px solid #444" : "3px solid #c4c4c4",
-                                background: dark ? "#1A1A1B" : "rgba(220, 220, 220, 0.6)",
+                                border: dark ? "3px solid #343434" : "3px solid #c4c4c4",
+                                background: dark ? "#161616" : "rgba(220, 220, 220, 0.6)",
                                 color: dark ? "whitesmoke" : "#333",
                                 borderRadius: ".35rem",
-                                padding: 20
+                                padding: 16
                             }}
                         >
-                            <Hash size={25} color="grey"/>
+                            <Hash size={20} color="grey" />
                             {(x.data as { header: string }).header}
                         </div>
                     </>
                 );
                 case "code": return (
-                    <CodeBlock data={x.data as CodeBlockData} id={x.id} dark={dark}/>
+                    <CodeBlock data={x.data as CodeBlockData} id={x.id} dark={dark} />
                 )
                 case "embed": return (
-                    <Embed data={x.data as EmbedData} id={x.id}/>
+                    <Embed data={x.data as EmbedData} id={x.id} />
                 );
                 case "img": return (
                     <Img
@@ -175,9 +178,9 @@ export default class BlockRenderer {
                         wide={wideImg}
                     />
                 );
-                default : return (<></>)
+                default: return (<></>)
             }
-        }).map(x => [x, <div style={{ height: 25 }}/>])
+        }).map(x => [x, <div style={{ height: 15 }} />])
     }
 
 }

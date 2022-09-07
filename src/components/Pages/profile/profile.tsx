@@ -42,8 +42,8 @@ const Styles = {
         border-color: #dcdcdc !important;
     `,
     profile_widget_dark_s: css`
-        background: #1A1A1B;
-        border-color: #444 !important;
+        background: #161616;
+        border-color: #343434 !important;
         h3, .description-field {
             color: whitesmoke !important;
         }
@@ -57,8 +57,8 @@ const Styles = {
         color: #666;
     `,
     stat_badge_s_dark: css`
-        background: #1A1A1B;
-        border-color: #444 !important;
+        background: #161616;
+        border-color: #343434 !important;
         color: whitesmoke;
     `
 };
@@ -193,7 +193,7 @@ export default class Profile extends PageBP<Props, State> {
                         <div
                             className={cx("text-center list-group-item-secondary",
                                 (this.state.dark && css`
-                                    background: #444;
+                                    background: #343434;
                                     color: whitesmoke;
                                 `)
                             )}
@@ -229,7 +229,7 @@ export default class Profile extends PageBP<Props, State> {
                                     borderRadius: ".7rem",
                                     padding: "20px 40px",
                                     minHeight: 240,
-                                    border: "4px solid"
+                                    border: "3px solid"
                                 }}
                                 className={cx(css`
                                         @media(min-width: 768px) {
@@ -264,7 +264,7 @@ export default class Profile extends PageBP<Props, State> {
                                             colors={["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"]}
                                         />
                                     </div>
-                                    <h3 style={{ fontFamily: "Jost", fontWeight: "bold", marginTop: 15, color: "#444", marginBottom: 5 }}>
+                                    <h3 style={{ fontFamily: "Jost", fontWeight: "bold", marginTop: 15, color: "#343434", marginBottom: 5 }}>
                                         {this.state.profile.username}
                                     </h3>
                                     <p style={{ fontFamily: "Jost", color: "#666", fontSize: ".9rem" }}>
@@ -458,11 +458,12 @@ export default class Profile extends PageBP<Props, State> {
                                 <div
                                     className={cx("text-center list-group-item-secondary",
                                         (this.state.dark && css`
-                                            background: #444;
+                                            background: #343434;
                                             color: whitesmoke;
                                         `)
                                     )}
-                                    style={{ borderRadius: ".35rem", padding: 40, fontFamily: "Jost" }}>
+                                    style={{ borderRadius: ".35rem", padding: 40, fontFamily: "Jost" }}
+                                >
                                     <span style={{ fontWeight: "bold" }}>{this.state.profile?.username}</span> has no guides yet!
                                 </div>
                             )
@@ -473,7 +474,7 @@ export default class Profile extends PageBP<Props, State> {
                     <Col md={4} sm={0} className={cx(CStyles.small_col_s)}>
                         <div style={{ position: "sticky", top: 25 }}>
                             <TopGuidesWidget dark={this.state.dark} />
-                            <br />
+                            <div style={{ height: 15 }} />
                             <UserListWidget
                                 dark={this.state.dark}
                                 lists={this.state.lists}

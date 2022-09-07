@@ -116,44 +116,75 @@ export default class Img extends React.Component<Props, State> {
     render() {
         return (
             <div style={{ minHeight: 97 }}>
-                <BlockPanel
-                    id={this.props.id}
-                    showEditModal={this.showEditModal}
-                    removeBlock={this.props.removeBlock}
-                    editBlock={this.props.editBlock}
-                    moveBlockUp={this.props.moveBlockUp}
-                    moveBlockDown={this.props.moveBlockDown}
-                    setDidEdit={this.props.setDidEdit}
-                    dark={this.props.dark}
-                />
                 {
                     this.state.cannotLoad ? (
-                        <div 
-                            className={cx("text-center list-group-item-danger",
-                                (this.props.dark && css`
-                                    background: #444;
-                                    color: whitesmoke;
-                                `)
-                            )}  
-                            style={{ borderRadius: ".35rem", padding: 35.5, fontFamily: "Jost" }}
+                        <div
+                            style={{
+                                borderRadius: ".35rem",
+                                border: "1px solid",
+                                borderColor: this.props.dark ? "#444" : "#dcdcdc",
+                                background: this.props.dark ? "#1A1A1B" : "white"
+                            }}
                         >
-                            <Image size={17} style={{ position: "relative", bottom: 2 }}/>
-                            &nbsp;
-                            Could not load Image
+                            <div
+                                className={cx("text-center list-group-item-danger",
+                                    (this.props.dark && css`
+                                        background: #343434;
+                                        color: whitesmoke;
+                                    `)
+                                )}
+                                style={{ padding: 35.5, borderRadius: ".3rem .3rem 0px 0px", fontFamily: "Jost" }}
+                            >
+                                <Image size={17} style={{ position: "relative", bottom: 2 }} />
+                                &nbsp;
+                                Could not load Image
+                            </div>
+                            <BlockPanel
+                                id={this.props.id}
+                                showEditModal={this.showEditModal}
+                                removeBlock={this.props.removeBlock}
+                                editBlock={this.props.editBlock}
+                                moveBlockUp={this.props.moveBlockUp}
+                                moveBlockDown={this.props.moveBlockDown}
+                                setDidEdit={this.props.setDidEdit}
+                                dark={this.props.dark}
+                                blockName="Image"
+                            />
                         </div>
                     ) : (
-                        <img
+                        <div
                             style={{
-                                width: "100%", 
-                                border: this.props.dark ? "1px solid #444" : "1px solid #dcdcdc", 
-                                borderRadius: ".35rem"
+                                borderRadius: ".35rem",
+                                border: "1px solid",
+                                borderColor: this.props.dark ? "#444" : "#dcdcdc",
+                                background: this.props.dark ? "#1A1A1B" : "white"
                             }}
-                            onLoad={() => this.setState({ cannotLoad: false })}
-                            onError={() => this.setState({ cannotLoad: true })}
-                            alt={this.props.data.caption || "An undescribed image"}
-                            src={config.endpoints.imageBucket(this.props.id)}
-                            loading="lazy"
-                        />
+                        >
+                            <img
+                                style={{
+                                    width: "100%",
+                                    border: this.props.dark ? "1px solid #343434" : "1px solid #dcdcdc",
+                                    borderBottom: 0,
+                                    borderRadius: ".3rem .3rem 0px 0px"
+                                }}
+                                onLoad={() => this.setState({ cannotLoad: false })}
+                                onError={() => this.setState({ cannotLoad: true })}
+                                alt={this.props.data.caption || "An undescribed image"}
+                                src={config.endpoints.imageBucket(this.props.id)}
+                                loading="lazy"
+                            />
+                            <BlockPanel
+                                id={this.props.id}
+                                showEditModal={this.showEditModal}
+                                removeBlock={this.props.removeBlock}
+                                editBlock={this.props.editBlock}
+                                moveBlockUp={this.props.moveBlockUp}
+                                moveBlockDown={this.props.moveBlockDown}
+                                setDidEdit={this.props.setDidEdit}
+                                dark={this.props.dark}
+                                blockName="Image"
+                            />
+                        </div>
                     )
                 }
                 {
@@ -163,11 +194,11 @@ export default class Img extends React.Component<Props, State> {
                         </div>
                     )
                 }
-                <EditModal 
-                    header={"Image"} 
+                <EditModal
+                    header={"Image"}
                     id={this.props.id}
-                    showEditModal={this.state.showEditModal} 
-                    discardEditModal={this.discardEditModal} 
+                    showEditModal={this.state.showEditModal}
+                    discardEditModal={this.discardEditModal}
                     closeEditModal={this.closeEditModal}
                     dark={this.props.dark}
                     loading={this.state.uploading}
@@ -177,9 +208,9 @@ export default class Img extends React.Component<Props, State> {
                             <Col style={{ color: this.props.dark ? "white" : "#333" }}>
                                 <Form.Group controlId="formFile" className="mb-3">
                                     <Form.Label>Upload an Image</Form.Label>
-                                    <label 
-                                        style={{ 
-                                            height: 200, 
+                                    <label
+                                        style={{
+                                            height: 200,
                                             width: "100%",
                                             borderRadius: ".35rem"
                                         }}
@@ -191,7 +222,7 @@ export default class Img extends React.Component<Props, State> {
                                                 cursor: pointer;
                                             }
                                         `, this.props.dark ? css`
-                                            background: #444;
+                                            background: #343434;
                                             &:hover { background: #666; }
                                         ` : css`
                                             background: #dcdcdc;
@@ -206,25 +237,25 @@ export default class Img extends React.Component<Props, State> {
                                         onDragLeave={this.handleDragLeave}
                                         onDrop={this.handleDrop}
                                     >
-                                        <div 
+                                        <div
                                             style={{ textAlign: "center" }}
                                         >
                                             {
                                                 this.state.uploadVal === null ? (
                                                     <>
-                                                        <Upload/>
-                                                        <br/>
+                                                        <Upload />
+                                                        <br />
                                                         Drag &amp; Drop or Click to Upload
                                                     </>
                                                 ) : this.state.uploadVal[0]
                                             }
                                         </div>
-                                        <Form.Control 
-                                            id={`file-${this.props.id}`} 
+                                        <Form.Control
+                                            id={`file-${this.props.id}`}
                                             type="file" accept="image/jpeg"
-                                            onChange={async (e) => this.setState({ 
+                                            onChange={async (e) => this.setState({
                                                 uploadVal: [
-                                                    e.target.value, 
+                                                    e.target.value,
                                                     // @ts-ignore 
                                                     (await this.toBase64(e.target.files[0])) as string
                                                 ]
@@ -233,15 +264,15 @@ export default class Img extends React.Component<Props, State> {
                                         />
                                     </label>
                                 </Form.Group>
-                                <hr/>
+                                <hr />
                                 <Form.Group>
                                     <Form.Label>Caption</Form.Label>
-                                    <Form.Control 
+                                    <Form.Control
                                         // id={`cpn-${this.props.id}`} 
                                         value={this.state.captionEditVal}
                                         style={{
-                                            borderColor: this.props.dark ? "#444" : "#dcdcdc",
-                                            background: this.props.dark ? "#1A1A1B" : "white",
+                                            borderColor: this.props.dark ? "#343434" : "#dcdcdc",
+                                            background: this.props.dark ? "#161616" : "white",
                                             color: this.props.dark ? "whitesmoke" : "#333"
                                         }}
                                         onChange={e => this.setState({ captionEditVal: e.target.value })}

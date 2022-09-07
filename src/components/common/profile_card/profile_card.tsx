@@ -12,7 +12,7 @@ import BounceLoader from "react-spinners/BounceLoader";
 import config from "../../../config";
 
 import $ from "jquery";
-import { inAuthContext } from "../PageBP/PageBP";
+import PageBP, { inAuthContext } from "../PageBP/PageBP";
 
 type ProfileData = {
     username: string,
@@ -147,9 +147,9 @@ export default class ProfileCard extends React.Component<Props, State> {
         ) return (
             <div
                 style={{
-                    background: (this.props.dark ? "#1A1A1B" : "white"),
-                    border: (this.props.dark ? "4px solid #444" : "4px solid #dcdcdc"),
-                    width: "100%", borderRadius: ".35rem"
+                    background: (this.props.dark ? "#161616" : "white"),
+                    border: (this.props.dark ? "3px solid #343434" : "3px solid #dcdcdc"),
+                    width: "100%", borderRadius: ".55rem"
                 }}
             >
                 <br />
@@ -164,9 +164,10 @@ export default class ProfileCard extends React.Component<Props, State> {
             <>
                 <div
                     style={{
-                        background: (this.props.dark ? "#1A1A1B" : "white"),
-                        border: (this.props.dark ? "4px solid #444" : "4px solid #dcdcdc"),
-                        width: "100%", borderRadius: ".35rem"
+                        background: (this.props.dark ? "#343434" : "#dcdcdc"),
+                        border: "3px solid",
+                        borderColor: (this.props.dark ? "#343434" : "#dcdcdc"),
+                        width: "100%", borderRadius: ".55rem"
                     }}
                     className={cx(css`
                         & > div > #profile-edit-btn {
@@ -185,23 +186,23 @@ export default class ProfileCard extends React.Component<Props, State> {
                         }
                     `)}
                 >
-                    <div style={{ width: "100%", borderTopRightRadius: ".35rem", borderTopLeftRadius: ".35rem" }}>
+                    <div style={{ width: "100%", borderTopRightRadius: ".4rem", borderTopLeftRadius: ".4rem", background: this.props.dark ? "#161616" : "white" }}>
                         {
                             !this.state.isEditing ? (
                                 <Button
                                     id="profile-edit-btn"
                                     size="sm"
-                                    variant="light"
+                                    // variant="light"
                                     style={{
                                         position: "absolute",
                                         top: 10, right: 25,
                                         fontFamily: "Jost",
                                         borderRadius: ".35rem",
                                         border: "3px solid",
-                                        borderColor: (this.props.dark ? "#666" : "#dcdcdc"),
-                                        background: "transparent"
+                                        // borderColor: (this.props.dark ? "#666" : "#dcdcdc"),
+                                        // background: "transparent"
                                     }}
-                                    className={cx(this.props.dark ? css`
+                                    /*className={cx(this.props.dark ? css`
                                         border-color: #666;
                                         color: #AAA;
                                         &:hover, &:focus, &:active {
@@ -211,13 +212,14 @@ export default class ProfileCard extends React.Component<Props, State> {
                                     ` : css`
                                         border-color: #dcdcdc;
                                         color: black;
-                                    `)}
+                                    `)}*/
+                                    className={PageBP.Styles.button(this.props.dark, true)}
                                     onClick={() => { this.setState({ isEditing: true }); }}
                                 >Edit</Button>
                             ) : (
                                 <Button
                                     size="sm"
-                                    variant="outline-danger"
+                                    variant="danger"
                                     style={{
                                         position: "absolute",
                                         top: 10, right: 25,
@@ -240,9 +242,20 @@ export default class ProfileCard extends React.Component<Props, State> {
                             />
                         </div>
                     </div>
-                    <div hidden={this.state.isEditing} style={{ marginBottom: 10 }}>
+                    <div
+                        hidden={this.state.isEditing}
+                        style={{
+                            paddingBottom: 10,
+                            borderBottomLeftRadius: ".4rem",
+                            borderBottomRightRadius: ".4rem",
+                            background: this.props.dark ? "#161616" : "white"
+                        }}
+                    >
                         <h5 className="text-center"
-                            style={{ fontFamily: "Jost", fontWeight: "bold", marginTop: 15, color: "#444", marginBottom: 5 }}
+                            style={{
+                                fontFamily: "Jost", fontWeight: "bold",
+                                paddingTop: 15, color: "#343434", marginBottom: 5
+                            }}
                         >
                             <Link
                                 to={`/user/${this.props.user.getUsername()}`}
@@ -275,7 +288,8 @@ export default class ProfileCard extends React.Component<Props, State> {
                     </div>
                     <div
                         style={{
-                            padding: "15px 30px"
+                            padding: "15px 30px",
+                            background: this.props.dark ? "#161616" : "white"
                         }}
                         hidden={!this.state.isEditing}
                     >
@@ -335,10 +349,11 @@ export default class ProfileCard extends React.Component<Props, State> {
             <>
                 <div
                     style={{
-                        background: (this.props.dark ? "#1A1A1B" : "white"),
-                        border: (this.props.dark ? "4px solid #444" : "4px solid #dcdcdc"),
+                        background: (this.props.dark ? "#161616" : "white"),
+                        border: "3px solid",
+                        borderColor: (this.props.dark ? "#343434" : "#dcdcdc"),
                         color: (this.props.dark ? "white" : "black"),
-                        width: "100%", borderRadius: ".35rem", padding: 25,
+                        width: "100%", borderRadius: ".55rem", padding: 25,
                         fontFamily: "Jost"
                     }}
 
@@ -369,15 +384,7 @@ export default class ProfileCard extends React.Component<Props, State> {
                             <Button
                                 variant="light"
                                 style={{ borderRadius: ".35rem", width: "100%", margin: 5, border: "1px solid #dcdcdc" }}
-                                className={cx(this.props.dark && css`
-                                        background: #444;
-                                        border-color: #444 !important;
-                                        &, &:hover { color: white; }
-                                        &:hover {
-                                            background: #666;
-                                            border-color: #666 !important;
-                                        }
-                                    `)}
+                                className={PageBP.Styles.button(this.props.dark)}
                             >
                                 <UserPlus style={{ position: "relative", bottom: 2 }} size={15} />
                                 &nbsp;

@@ -56,10 +56,10 @@ export default class Img extends React.Component<Props, State> {
             <div style={{ minHeight: 97 }}>
                 {
                     this.state.cannotLoad ? (
-                        <div 
+                        <div
                             className={cx("text-center list-group-item-danger",
                                 (this.props.dark && css`
-                                    background: #444;
+                                    background: #343434;
                                     color: whitesmoke;
                                 `),
                                 (this.props.wide && css`
@@ -68,17 +68,17 @@ export default class Img extends React.Component<Props, State> {
                                         margin-bottom: 15px;
                                     }
                                 `)
-                            )}  
+                            )}
                             style={{ borderRadius: ".35rem", padding: 35.5, fontFamily: "Jost" }}
                         >
-                            <Image size={17} style={{ position: "relative", bottom: 2 }}/>
+                            <Image size={17} style={{ position: "relative", bottom: 2 }} />
                             &nbsp;
                             Could not load Image
                         </div>
                     ) : (
                         <img
                             style={{
-                                border: this.props.dark ? "1px solid #444" : "1px solid #dcdcdc", 
+                                border: this.props.dark ? "1px solid #343434" : "1px solid #dcdcdc",
                                 borderRadius: ".35rem"
                             }}
                             className={cx(this.props.wide && css`

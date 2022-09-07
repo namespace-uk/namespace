@@ -10,6 +10,7 @@ import PageBP from "../../common/PageBP/PageBP";
 import Template from "../../common/template";
 import UserHandler from "../../common/UserHandler";
 import CStyles from "../../common/common_styles";
+import config from "../../../config";
 
 type Space = { id: string, name: string, url: string };
 
@@ -28,8 +29,8 @@ const Styles = {
         color: #333;
     `,
     dark_s: css`
-        background: #1A1A1B;
-        border-color: #444 !important;
+        background: #161616;
+        border-color: #343434 !important;
         color: whitesmoke;
     `
 };
@@ -46,11 +47,10 @@ export default class SpaceNavigator extends PageBP<Props, State> {
             hasLoaded: false
         };
 
-        this.init();
     }
 
     init() {
-        fetch("https://z5ermsmvlysvfwh2vg7xtyvaom0mqfdr.lambda-url.eu-west-1.on.aws/")
+        fetch(config.endpoints.getSpaces)
             .then(res => res.json())
             .then((data: Space[]) => {
                 this.setState({ spaces: data, hasLoaded: true });
@@ -89,14 +89,14 @@ export default class SpaceNavigator extends PageBP<Props, State> {
                                         style={{
                                             padding: 20,
                                             border: "3px solid",
-                                            borderRadius: ".35rem",
+                                            borderRadius: ".55rem",
                                             fontFamily: "Jost"
                                         }}
                                     >
                                         <div
                                             className={cx("text-center list-group-item-primary",
                                                 (this.state.dark && css`
-                                                    background: #444;
+                                                    background: #343434;
                                                     color: whitesmoke;
                                                 `)
                                             )}
@@ -126,13 +126,13 @@ export default class SpaceNavigator extends PageBP<Props, State> {
                                                                 borderRadius: ".35rem",
                                                                 padding: "8px 12px",
                                                                 border: "1px solid",
-                                                                borderColor: this.state.dark ? "#444" : "#dcdcdc"
+                                                                borderColor: this.state.dark ? "#343434" : "#dcdcdc"
                                                             }}
                                                             className={cx(window.origin === x.url ? css`
-                                                                background: ${this.state.dark ? "#444" : "#dcdcdc"};
+                                                                background: ${this.state.dark ? "#343434" : "#dcdcdc"};
                                                             ` : css`
                                                                 &:hover {
-                                                                    background: ${this.state.dark ? "#444" : "#dcdcdc"};
+                                                                    background: ${this.state.dark ? "#343434" : "#dcdcdc"};
                                                                 }
                                                             `)}
                                                         >

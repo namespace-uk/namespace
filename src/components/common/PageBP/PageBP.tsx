@@ -24,19 +24,20 @@ export const inAuthContext = (f: (s: CognitoUserSession) => void, user: CognitoU
 export const withParams = (Component: any) => (props: any) => {
     const params = useParams();
     return <Component params={params} {...props} />;
-  };
+};
 
 export default abstract class PageBP<P, S extends BPState> extends React.Component<P, S> {
 
-    private userHandler = new UserHandler();
+    protected userHandler = new UserHandler();
     protected localStorage = PageBP.setLocalStorage();
     static readonly Styles = {
-        component: pair(Styles.component_l, Styles.component_d)
+        component: pair(Styles.component_l, Styles.component_d),
+        button: Styles.button
     };
 
     static setLocalStorage = () => {
         let storage = (localStorage ? localStorage : null);
-    
+
         try {
             if (storage) {
                 // verify if posible saving in the current storage
@@ -65,5 +66,7 @@ export default abstract class PageBP<P, S extends BPState> extends React.Compone
     });
 
     abstract init(): void
+
+    componentDidMount = this.init;
 
 }

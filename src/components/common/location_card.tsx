@@ -7,7 +7,7 @@ type Props = {
 
 const LocationCard = (props: Props) => (
     <div style={{
-        background: (props.dark ? "#1A1A1B" : "white"),
+        background: (props.dark ? "#161616" : "white"),
         width: "100%", height: 40, borderRadius: ".35rem",
         verticalAlign: "middle", fontFamily: "Jost, sans-serif",
         padding: 9, color: (props.dark ? "white" : "#666")

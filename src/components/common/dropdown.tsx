@@ -4,26 +4,13 @@ import { css, cx } from "@emotion/css";
 
 import { Button, OverlayTrigger, Popover } from "react-bootstrap";
 import { ReactElement } from "react-markdown/lib/react-markdown";
+import PageBP from "./PageBP/PageBP";
+import { X as Cross } from "react-feather";
 
-export const MenuBtn: React.FC<{ onClick?: React.MouseEventHandler<HTMLElement>, children?: React.ReactNode }> = props => (
+export const MenuBtn: React.FC<{ onClick?: React.MouseEventHandler<HTMLElement>, dark: boolean, children?: React.ReactNode }> = props => (
     <Button
-        variant="light"
         style={{ width: "100%" }}
-        className={cx(css`
-            background: white;
-            border: none;
-            text-align: left;
-            font-weight: bold;
-
-            &, &:focus, &:active, &:hover {
-                outline: none !important;
-                box-shadow: none !important;
-            }
-
-            &:hover {
-                background: #f8f9fa;
-            }
-        ` )}
+        className={PageBP.Styles.button(props.dark)}
         onClick={props.onClick}
     >
         {props.children}
@@ -46,20 +33,20 @@ const DropdownOnClick: React.FC<{
                 id={props.popoverId}
                 className={
                     cx("shadow", (props.dark ? css`
-                        background: #1A1A1B;
+                        background: #161616;
                         .arrow::after {
-                            border-bottom-color: #1A1A1B;
+                            border-bottom-color: #161616;
                         }
-                        border-color: #666 !important;
+                        border-color: #343434 !important;
                         hr {
-                            border-color: #444;
+                            border-color: #343434;
                         }
                         h6 { color: white; }
                         .btn {
-                            background: #1A1A1B;
+                            background: #161616;
                             color: white;
                             &:hover {
-                            background: #444;
+                            background: #343434;
                             }
                         }
                     ` : css`
@@ -69,11 +56,36 @@ const DropdownOnClick: React.FC<{
                     ))}
                 style={{
                     border: "1px solid",
-                    padding: 10, borderRadius: ".35rem",
+                    borderRadius: ".55rem",
                     fontFamily: "Jost", width: 250
                 }}
             >
-                {props.overlay}
+                <div
+                    style={{
+                        padding: "3px 12px",
+                        borderBottom: "1px solid",
+                        borderColor: props.dark ? "#343434" : "#dcdcdc",
+                        fontWeight: "bold",
+                        color: props.dark ? "#dcdcdc" : "#333"
+                    }}
+                >
+                    More
+                    <span
+                        style={{ float: "right" }}
+                        className={cx(css`
+                            &:hover {
+                                cursor: pointer;
+                                color: #999;
+                            }
+                        `)}
+                        onClick={() => document.body.click()}
+                    >
+                        <Cross size={18} />
+                    </span>
+                </div>
+                <div style={{ padding: 10 }}>
+                    {props.overlay}
+                </div>
             </Popover>
         }
     >

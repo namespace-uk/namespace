@@ -31,44 +31,44 @@ export default class CodeBlock extends React.Component<Props, State> {
     copyCode() {
         navigator.clipboard.writeText(this.props.data.code);
 
-        this.setState({codeCopied: true}, () => {
-            setTimeout(() => {this.setState({codeCopied: false})}, 1500);
+        this.setState({ codeCopied: true }, () => {
+            setTimeout(() => { this.setState({ codeCopied: false }) }, 1500);
         });
     }
 
     render() {
         return (
             <>
-                <div 
-                    style={{ 
-                        width: "100%", 
-                        border: "1px solid", 
+                <div
+                    style={{
+                        width: "100%",
+                        border: "1px solid",
                         borderBottom: 0,
-                        borderTopRightRadius: ".35rem", 
-                        borderTopLeftRadius: ".35rem", 
-                        background: this.props.dark ? "#1A1A1B" : "white",
-                        borderColor: this.props.dark ? "#444" : "#dcdcdc",
+                        borderTopRightRadius: ".35rem",
+                        borderTopLeftRadius: ".35rem",
+                        background: this.props.dark ? "#161616" : "white",
+                        borderColor: this.props.dark ? "#343434" : "#dcdcdc",
                         padding: "5px 6px"
                     }}
                 >
                     &nbsp;&nbsp;
-                    <OverlayTrigger 
-                        trigger="hover" placement="bottom" 
+                    <OverlayTrigger
+                        trigger="hover" placement="bottom"
                         overlay={
                             <Tooltip id={`${this.props.id}-copy-tooltip`}>
                                 {this.state.codeCopied ? "Copied!" : "Copy"}
                             </Tooltip>
                         }
                     >
-                        <Copy 
-                            style={{ padding: 5, borderRadius: ".35rem" }} 
+                        <Copy
+                            style={{ padding: 5, borderRadius: ".35rem" }}
                             className={cx(css`
                                 ${this.props.dark && "color: whitesmoke;"}
                                 &:hover { 
-                                    background: ${this.props.dark ? "#444" : "whitesmoke"};
+                                    background: ${this.props.dark ? "#343434" : "whitesmoke"};
                                     cursor: pointer;
                                 }
-                            `)} 
+                            `)}
                             size={25}
                             onClick={this.copyCode}
                         />
@@ -78,14 +78,14 @@ export default class CodeBlock extends React.Component<Props, State> {
                         &nbsp;&nbsp;
                     </span>
                 </div>
-                <pre style={{ 
-                    padding: 25, border: "1px solid", 
-                    borderBottomRightRadius: ".35rem", 
-                    borderBottomLeftRadius: ".35rem", 
+                <pre style={{
+                    padding: 25, border: "1px solid",
+                    borderBottomRightRadius: ".35rem",
+                    borderBottomLeftRadius: ".35rem",
                     fontSize: "87.5%", lineHeight: 1.6,
                     marginBottom: 0, maxWidth: "calc(100vw - 30px)",
-                    background: this.props.dark ? "#1A1A1B" : "white",
-                    borderColor: this.props.dark ? "#444" : "#dcdcdc",
+                    background: this.props.dark ? "#161616" : "white",
+                    borderColor: this.props.dark ? "#343434" : "#dcdcdc",
                     color: this.props.dark ? "whitesmoke" : "black"
                 }}>
                     <code

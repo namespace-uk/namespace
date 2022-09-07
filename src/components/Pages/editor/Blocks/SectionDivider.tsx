@@ -54,35 +54,43 @@ export default class SectionDivider extends React.Component<Props, State> {
     render() {
         return (
             <div style={{ minHeight: 97 }}>
-                <BlockPanel
-                    id={this.props.id}
-                    showEditModal={this.showEditModal}
-                    removeBlock={this.props.removeBlock}
-                    editBlock={this.props.editBlock}
-                    moveBlockUp={this.props.moveBlockUp}
-                    moveBlockDown={this.props.moveBlockDown}
-                    setDidEdit={this.props.setDidEdit}
-                    dark={this.props.dark}
-                />
                 <div
                     style={{
                         width: "100%",
                         fontFamily: "Jost",
                         fontWeight: "bold",
-                        fontSize: 35,
+                        fontSize: 25,
                         textAlign: "center",
-                        border: this.props.dark ? "3px solid #444" : "3px solid #c4c4c4",
-                        background: this.props.dark ? "#1A1A1B" : "rgba(220, 220, 220, 0.6)",
+                        border: this.props.dark ? "3px solid #343434" : "3px solid #c4c4c4",
+                        background: this.props.dark ? "#161616" : "white",
                         color: this.props.dark ? "whitesmoke" : "#333",
-                        borderRadius: ".35rem",
-                        padding: 20
+                        borderRadius: ".35rem"
                     }}
                 >
-                    <Hash size={25} color="grey" />
-                    {(this.props.data as { header: string }).header}
+                    <div
+                        style={{
+                            padding: 16,
+                            background: this.props.dark ? "inherit" : "rgba(220, 220, 220, 0.6)",
+                            borderRadius: ".2rem .2rem 0 0"
+                        }}
+                    >
+                        <Hash size={20} color="grey" />
+                        {(this.props.data as { header: string }).header}
+                    </div>
+                    <BlockPanel
+                        id={this.props.id}
+                        showEditModal={this.showEditModal}
+                        removeBlock={this.props.removeBlock}
+                        editBlock={this.props.editBlock}
+                        moveBlockUp={this.props.moveBlockUp}
+                        moveBlockDown={this.props.moveBlockDown}
+                        setDidEdit={this.props.setDidEdit}
+                        dark={this.props.dark}
+                        blockName="Subtitle"
+                    />
                 </div>
                 <EditModal
-                    header={"Section"}
+                    header={"Subtitle"}
                     showEditModal={this.state.showEditModal}
                     discardEditModal={this.discardEditModal}
                     closeEditModal={this.closeEditModal}
@@ -98,8 +106,8 @@ export default class SectionDivider extends React.Component<Props, State> {
                                         width: "100%", padding: 30, fontFamily: "Jost",
                                         resize: "none", borderRadius: ".35rem", margin: 0,
                                         border: "1px solid",
-                                        borderColor: this.props.dark ? "#444" : "#dcdcdc",
-                                        background: this.props.dark ? "#1A1A1B" : "white",
+                                        borderColor: this.props.dark ? "#343434" : "#dcdcdc",
+                                        background: this.props.dark ? "#161616" : "white",
                                         color: this.props.dark ? "whitesmoke" : "#333"
                                     }}
 
